@@ -9,7 +9,7 @@ public class MainClass {
 
 	public static void main(String[] args) {
 		Run.initGenerators();
-		String file = "test1.cpp";
+		String file = "tests/test1.cpp";
 		TreeContext tc;
 		try {
 			tc = Generators.getInstance().getTree(file);
