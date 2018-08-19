@@ -14,6 +14,7 @@ import com.github.gumtreediff.utils.Pair;
 
 public class ParallelASTTraverser 
 {
+	
 	public static CompilationUnit createCompilationUnit(String code)
 	{
 		ASTParser parser = ASTParser.newParser(AST.JLS8); 
@@ -48,14 +49,17 @@ public class ParallelASTTraverser
 	public ParallelASTTraverser(String srcPath, String destPath) throws IOException
 	{
 		this.srcUnit = createCompilationUnit(readSource(srcPath));
-		this.srcUnit = createCompilationUnit(readSource(destPath));
+		this.destUnit = createCompilationUnit(readSource(destPath));
 		MappingFactory mf = new MappingFactory(srcPath, destPath);
 		this.renames = mf.getUpdates();
 	}
 	
 	
+	// TODO this method should return an indicator value, still thinking what it should be
 	public void traverse()
 	{
-		// TODO this will be the main function which will traverse the trees in parallel
+		// TODO need to make this work in parallel
+		this.srcUnit.accept(new CustomASTVisitor());
+		this.destUnit.accept(new CustomASTVisitor());
 	}
 }

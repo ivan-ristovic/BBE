@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.github.gumtreediff.actions.ActionGenerator;
 import com.github.gumtreediff.actions.model.Action;
+import com.github.gumtreediff.client.Run;
 import com.github.gumtreediff.gen.Generators;
 import com.github.gumtreediff.matchers.Matcher;
 import com.github.gumtreediff.matchers.Matchers;
@@ -13,6 +14,12 @@ import com.github.gumtreediff.utils.Pair;
 
 public class MappingFactory 
 {
+	static 
+	{
+		Run.initGenerators();
+	}
+	
+	
 	private ITree t1;
 	private ITree t2;
 	private Matcher matcher;
