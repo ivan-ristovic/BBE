@@ -49,4 +49,13 @@ public class MappingFactory
 
 		return renames;
 	}
+	
+	public boolean hasOnlyUpdateActions()
+	{
+		ActionGenerator g = new ActionGenerator(t1, t2, this.matcher.getMappings());
+		for (Action action : g.generate())
+			if (!(action instanceof Update))
+				return false;
+		return true;
+	}
 }

@@ -6,6 +6,7 @@ public class A
     {
         int g = 9;
         int h, l;
+        int a;
         ArrayList<Integer> ff = new ArrayList<Integer>();
         
         foobar();

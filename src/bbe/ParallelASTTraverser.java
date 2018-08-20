@@ -43,15 +43,14 @@ public class ParallelASTTraverser
 	
 	private CompilationUnit srcUnit;
 	private CompilationUnit destUnit;
-	ArrayList<Pair<String, String>> renames;
+	private ArrayList<Pair<String, String>> renames;
 	
 	
-	public ParallelASTTraverser(String srcPath, String destPath) throws IOException
+	public ParallelASTTraverser(String srcPath, String destPath, ArrayList<Pair<String, String>> renames) throws IOException
 	{
 		this.srcUnit = createCompilationUnit(readSource(srcPath));
 		this.destUnit = createCompilationUnit(readSource(destPath));
-		MappingFactory mf = new MappingFactory(srcPath, destPath);
-		this.renames = mf.getUpdates();
+		this.renames = renames;
 	}
 	
 	
