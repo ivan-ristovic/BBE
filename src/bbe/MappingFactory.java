@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.github.gumtreediff.actions.ActionGenerator;
 import com.github.gumtreediff.actions.model.Action;
+import com.github.gumtreediff.actions.model.Update;
 import com.github.gumtreediff.client.Run;
 import com.github.gumtreediff.gen.Generators;
 import com.github.gumtreediff.matchers.Matcher;
@@ -40,9 +41,9 @@ public class MappingFactory
 		
 		ActionGenerator g = new ActionGenerator(t1, t2, this.matcher.getMappings());
 		for (Action action : g.generate()) {
-			if (action.getName() == "UPD") {
-				// TODO find out how to get the post-change name
-				renames.add(new Pair<String, String>(action.getNode().getLabel(), action.getNode().getLabel()));
+			if (action instanceof Update) {
+				Update upd = (Update)action;
+				renames.add(new Pair<String, String>(upd.getNode().getLabel(), upd.getValue()));
 			}
 		}
 
