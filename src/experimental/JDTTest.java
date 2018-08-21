@@ -193,7 +193,207 @@ public class JDTTest
 					
 					return true;
 				}
-	 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				
+				// Function that looks for index of variable pair based on first variable name
+				private int findVariablesPair(String variable1)
+				{
+					int i = 0;
+					
+					for (Pair<String, String> pair : updates) {
+						if (pair.first.equals(variable1))
+							return i;
+						i++;
+					}
+					
+					return -1;
+				}
+				
+				public boolean checkVariables(String variable1, String variable2, String replacement)
+				{
+					// We are looking for the first one (one from the correct code)
+					int index = findVariablesPair(variable1);
+					
+					Pair<String, String> variablePair = null;
+					
+					if (index == -1) 
+						return false;
+					
+					// Taking the right pair of variables from updates
+					variablePair = updates.get(index);
+					
+					// If the variable from wrong code is not the same (exactly or at least renamed)
+					// as the one in correct code error
+					if (!variablePair.second.equals(variable2)) {
+						replacement = variablePair.second;
+						return false;
+					}
+					
+					return true;
+				}
+				
+				public boolean checkNumbers (Expression expr1, Expression expr2)
+				{
+					// If numbers are different error
+					if (Integer.parseInt(expr1.toString()) != Integer.parseInt(expr2.toString())) {
+						return false;
+					}
+					
+					return true;
+				}
+				
+				public boolean checkVariableAndNumber(String variable, Expression expr)
+				{
+					// If variable has different value than number
+					if (Integer.parseInt(expr.toString()) != this.vars.get(variable))
+						return false;
+					
+					return true;
+				}
+				
+				// Maybe it can be void, if we write to file or smth.
+				// Even if it is failure, we are continuing recursive search of nodes
+				public boolean checkAssignments(Assignment node1, Assignment node2)
+				{
+					// Taking variables
+					String variable1 = node1.getLeftHandSide().toString();
+					String variable2 = node2.getLeftHandSide().toString();
+					
+					String replacement = "";
+					
+					boolean failure = false;
+					
+					if (!checkVariables(variable1, variable2, replacement)) { 
+						System.out.println("Wrong variable in assignment, variable " + variable2 + " should" +
+								"be replaced with variable" + replacement);
+						/**** NO return here, we still want to check right sides ****/
+						failure = true;
+					}
+					
+					Expression initializer1 = node1.getRightHandSide();
+					Expression initializer2 = node2.getRightHandSide();
+					
+					if (initializer1.getNodeType() == Type.NUMBER_LITERAL) {
+						// Both initializers are numbers
+						if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkNumbers(initializer1, initializer2)) {
+								System.out.println("Wrong initializer in assignment, initializer " + initializer2 + " should" +
+										"be replaced with initializer " + initializer1);
+								failure = true;
+							}
+						}
+						else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkVariableAndNumber(initializer2.toString(), initializer1)) {
+								System.out.println("Wrong variable in assignment, variable " + initializer2 + " should" +
+										"be replaced with initializer " + initializer1);
+								failure = true;
+							}
+						}
+					}
+					else if (initializer1.getNodeType() == Type.SIMPLE_NAME) {
+						if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkVariableAndNumber(initializer1.toString(), initializer2)) {
+								System.out.println("Wrong initializer in assignment, initializer " + initializer2 + " should" +
+										"be replaced with variable " + initializer1);
+								failure = true;
+							}
+						}
+						else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkVariables(initializer1.toString(), initializer2.toString(), replacement)) {
+								System.out.println("Wrong variable in assignment, variable " + initializer2 + " should" +
+										"be replaced with variable " + replacement);
+								failure = true;
+							}
+						}
+					}
+					
+					return !failure;
+				}
+				
+				// Again maybe void
+				public boolean checkInfix(InfixExpression expr1, InfixExpression expr2)
+				{
+					Expression left1 = expr1.getLeftOperand();
+					Expression left2 = expr2.getLeftOperand();
+					Expression right1 = expr1.getRightOperand();
+					Expression right2 = expr2.getRightOperand();
+					
+					String operator1 = expr1.getOperator().toString();
+					String operator2 = expr2.getOperator().toString();
+										
+					String replacement = "";
+					
+					boolean failure = false;
+					
+					if (!operator1.equals(operator2)) {
+						System.out.println(operator1 + " should be replaced with " + operator2);
+						failure = true;
+					}
+
+					if (left1.getNodeType() == Type.NUMBER_LITERAL) {
+						if (left2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkNumbers(left1, left2)) {
+								System.out.println(left2 + " should be replaced with " + left1);
+								failure = true;
+							}
+						}
+						else if (left2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkVariableAndNumber(left2.toString(), left1)) {
+								System.out.println(left2 + " should be replaced with " + left1);
+								failure = true;
+							}
+						}
+					}
+					else if (left1.getNodeType() == Type.SIMPLE_NAME) {
+						if (left2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkVariableAndNumber(left1.toString(), left2)) {
+								System.out.println(left2 + " should be replaced with " + left1);
+								failure = true;
+							}
+						}
+						else if (left2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkVariables(left1.toString(), left2.toString(), replacement)) {
+								System.out.println(left2 + " should be replaced with " + replacement);
+								failure = true;
+							}
+						}
+					}
+					
+					if (right1.getNodeType() == Type.NUMBER_LITERAL) {
+						if (right2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkNumbers(right1, right2)) {
+								System.out.println(right2 + " should be replaced with " + right1);
+								failure = true;
+							}
+						}
+						else if (right2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkVariableAndNumber(right2.toString(), right1)) {
+								System.out.println(right2 + " should be replaced with " + right1);
+								failure = true;
+							}
+						}
+					}
+					else if (right1.getNodeType() == Type.SIMPLE_NAME) {
+						if (right2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkVariableAndNumber(right1.toString(), right2)) {
+								System.out.println(right2 + " should be replaced with " + right1);
+								failure = true;
+							}
+						}
+						else if (right2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkVariables(right1.toString(), right2.toString(), replacement)) {
+								System.out.println(right2 + " should be replaced with " + replacement);
+								failure = true;
+							}
+						}
+					}
+					
+					return !failure;
+				}
+				
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 				@SuppressWarnings("unchecked")
 				public boolean visit(MethodDeclaration node) {
 					System.out.println("--- METHOD DECLARATION ---");
