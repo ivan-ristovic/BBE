@@ -257,6 +257,60 @@ public class JDTTest
 					return true;
 				}
 				
+				private int getInfixExpressionValue(InfixExpression expression)
+				{
+					Expression left = expression.getLeftOperand();
+					Expression right = expression.getRightOperand();
+					String operator = expression.getOperator().toString();
+					
+					int valueLeft = left.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(left.toString()) : this.vars.get(left.toString());
+					int valueRight = right.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(right.toString()) : this.vars.get(right.toString());
+					
+					int value = 0;
+					
+					switch (operator) {
+						case "+":
+							value = valueLeft + valueRight;
+							break;
+						case "-":
+							value = valueLeft - valueRight;
+							break;
+						case "*":
+							value = valueLeft * valueRight;
+							break;
+						case "/":
+							value = valueLeft / valueRight;
+							break;
+						case "%":
+							value = valueLeft % valueRight;
+							break;
+					}
+					
+					return value;
+				}
+				
+				public boolean checkInfixAndVariable(InfixExpression expression, String variable)
+				{
+					int value = getInfixExpressionValue(expression);
+				
+					if (value != this.vars.get(variable)) {
+						return false;
+					}
+					
+					return true;
+				}
+				
+				public boolean checkInfixAndNumber(InfixExpression expression, Expression number)
+				{
+					int value = getInfixExpressionValue(expression);
+				
+					if (value != Integer.parseInt(number.toString())) {
+						return false;
+					}
+					
+					return true;
+				}
+				
 				// Maybe it can be void, if we write to file or smth.
 				// Even if it is failure, we are continuing recursive search of nodes
 				public boolean checkAssignments(Assignment node1, Assignment node2)
@@ -265,9 +319,17 @@ public class JDTTest
 					String variable1 = node1.getLeftHandSide().toString();
 					String variable2 = node2.getLeftHandSide().toString();
 					
+					String operator1 = node1.getOperator().toString();
+					String operator2 = node2.getOperator().toString();
+					
 					String replacement = "";
 					
 					boolean failure = false;
+					
+					if (!operator1.equals(operator2)) {
+						System.out.println(operator2 + " should be replaced with " + operator1);
+						failure = true;
+					}
 					
 					if (!checkVariables(variable1, variable2, replacement)) { 
 						System.out.println("Wrong variable in assignment, variable " + variable2 + " should" +
@@ -295,6 +357,13 @@ public class JDTTest
 								failure = true;
 							}
 						}
+						else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfixAndNumber((InfixExpression)initializer2, initializer1)) {
+								System.out.println("Wrong variable in assignment, initializer " + initializer2 + " should" +
+										"be replaced with initializer " + initializer1);
+								failure = true;
+							}
+						}
 					}
 					else if (initializer1.getNodeType() == Type.SIMPLE_NAME) {
 						if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
@@ -308,6 +377,13 @@ public class JDTTest
 							if (!checkVariables(initializer1.toString(), initializer2.toString(), replacement)) {
 								System.out.println("Wrong variable in assignment, variable " + initializer2 + " should" +
 										"be replaced with variable " + replacement);
+								failure = true;
+							}
+						}
+						else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfixAndVariable((InfixExpression)initializer2, initializer1.toString())) {
+								System.out.println("Wrong variable in assignment, initializer " + initializer2 + " should" +
+										"be replaced with initializer " + initializer1);
 								failure = true;
 							}
 						}
@@ -349,6 +425,12 @@ public class JDTTest
 								failure = true;
 							}
 						}
+						else if (left2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfixAndNumber((InfixExpression)left2, left1)) {
+								System.out.println(left2 + " should be replaced with " + left1);
+								failure = true;
+							}
+						}
 					}
 					else if (left1.getNodeType() == Type.SIMPLE_NAME) {
 						if (left2.getNodeType() == Type.NUMBER_LITERAL) {
@@ -360,6 +442,32 @@ public class JDTTest
 						else if (left2.getNodeType() == Type.SIMPLE_NAME) {
 							if (!checkVariables(left1.toString(), left2.toString(), replacement)) {
 								System.out.println(left2 + " should be replaced with " + replacement);
+								failure = true;
+							}
+						}
+						else if (left2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfixAndVariable((InfixExpression)left2, left1.toString())) {
+								System.out.println(left2 + " should be replaced with " + left1);
+								failure = true;
+							}
+						}
+					}
+					else if (left1.getNodeType() == Type.INFIX_EXPRESSION) {
+						if (left2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkInfixAndNumber((InfixExpression)left1, left2)) {
+								System.out.println(left2 + " should be replaced with " + left1);
+								failure = true;
+							}
+						}
+						else if (left2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkInfixAndVariable((InfixExpression)left1, left2.toString())) {
+								System.out.println(left2 + " should be replaced with " + replacement);
+								failure = true;
+							}
+						}
+						else if (left2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfix((InfixExpression)left1, (InfixExpression)left2)) {
+								System.out.println(left2 + " should be replaced with " + left1);
 								failure = true;
 							}
 						}
@@ -378,6 +486,12 @@ public class JDTTest
 								failure = true;
 							}
 						}
+						else if (right2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfixAndNumber((InfixExpression)right2, right1)) {
+								System.out.println(right2 + " should be replaced with " + right1);
+								failure = true;
+							}
+						}
 					}
 					else if (right1.getNodeType() == Type.SIMPLE_NAME) {
 						if (right2.getNodeType() == Type.NUMBER_LITERAL) {
@@ -389,6 +503,32 @@ public class JDTTest
 						else if (right2.getNodeType() == Type.SIMPLE_NAME) {
 							if (!checkVariables(right1.toString(), right2.toString(), replacement)) {
 								System.out.println(right2 + " should be replaced with " + replacement);
+								failure = true;
+							}
+						}
+						else if (right2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfixAndVariable((InfixExpression)right2, right1.toString())) {
+								System.out.println(right2 + " should be replaced with " + right1);
+								failure = true;
+							}
+						}
+					}
+					else if (right1.getNodeType() == Type.INFIX_EXPRESSION) {
+						if (right2.getNodeType() == Type.NUMBER_LITERAL) {
+							if (!checkInfixAndNumber((InfixExpression)right1, right2)) {
+								System.out.println(right2 + " should be replaced with " + right1);
+								failure = true;
+							}
+						}
+						else if (right2.getNodeType() == Type.SIMPLE_NAME) {
+							if (!checkInfixAndVariable((InfixExpression)right1, right2.toString())) {
+								System.out.println(right2 + " should be replaced with " + replacement);
+								failure = true;
+							}
+						}
+						else if (right2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (!checkInfix((InfixExpression)right1, (InfixExpression)right2)) {
+								System.out.println(right2 + " should be replaced with " + right1);
 								failure = true;
 							}
 						}
@@ -429,6 +569,12 @@ public class JDTTest
 									failure = true;
 								}
 							}
+							else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
+								if (!checkInfixAndNumber((InfixExpression)initializer2, initializer1)) {
+									System.out.println(initializer2 + " should be replaced with " + initializer1);
+									failure = true;
+								}
+							}
 						}
 						else if (initializer1.getNodeType() == Type.SIMPLE_NAME) {
 							if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
@@ -443,9 +589,27 @@ public class JDTTest
 									failure = true;
 								}
 							}
+							else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
+								if (!checkInfixAndVariable((InfixExpression)initializer2, initializer1.toString())) {
+									System.out.println(initializer2 + " should be replaced with " + initializer1);
+									failure = true;
+								}
+							}
 						}
 						else if (initializer1.getNodeType() == Type.INFIX_EXPRESSION) {
-							if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
+								if (!checkInfixAndNumber((InfixExpression)initializer1, initializer2)) {
+									System.out.println(initializer2 + " should be replaced with " + initializer1);
+									failure = true;
+								}
+							}
+							else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
+								if (!checkInfixAndVariable((InfixExpression)initializer1, initializer2.toString())) {
+									System.out.println(initializer2 + " should be replaced with " + replacement);
+									failure = true;
+								}
+							}
+							else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
 								if (!checkInfix((InfixExpression)initializer1, (InfixExpression)initializer2)) {
 									System.out.println(initializer2 + " should be replaced with " + initializer1);
 									failure = true;
@@ -510,5 +674,3 @@ public class JDTTest
 		}
 	}
 }
-
-
