@@ -64,7 +64,7 @@ public class ASTTraverser
 	
 	public void traverseDestTree(HashMap<Integer, HashMap<String, Integer>> expectedVars)
 	{
-		DestASTVisitor visitor = new DestASTVisitor(expectedVars);
+		DestASTVisitor visitor = new DestASTVisitor(expectedVars, renames);
 		this.destUnit.accept(visitor);
 		// return indicator of success
 	}
