@@ -2,6 +2,9 @@ package bbe;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import com.github.gumtreediff.utils.Pair;
 
@@ -15,8 +18,6 @@ public class Program
 		//	logAndExit("usage: bbe src.java dest.java");
 		
 		
-		// TODO check recursively if the trees are isomorphic via GumTree API
-		// TODO if they are not, list the changes and exit
 		MappingFactory mf = null;
 		try {
 			mf = new MappingFactory(/*args[1]*/ "tests/test1.java", /*args[2]*/ "tests/test2.java");
@@ -32,14 +33,27 @@ public class Program
 		
 		// if they are, proceed with the JDT API AST traversal using our custom traverser
 		
-		ParallelASTTraverser traverser = null;
+		ASTTraverser traverser = null;
 		try {
-			traverser = new ParallelASTTraverser(/*args[1]*/ "tests/test1.java", /*args[2]*/ "tests/test2.java", mf.getUpdates());
+			traverser = new ASTTraverser(/*args[1]*/ "tests/test1.java", /*args[2]*/ "tests/test2.java", mf.getUpdates());
 		} catch (IOException e) {
 			logErrorAndExit("failed to load the source files");
 		}
 		
-		traverser.traverse();
+		HashMap<Integer, HashMap<String, Integer>> vars = traverser.traverseSrcTree();
+		
+		Iterator it = vars.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pair = (Map.Entry)it.next();
+	        System.out.println("Block: " + pair.getKey());
+	        Iterator iit = ((HashMap<String, Integer>)pair.getValue()).entrySet().iterator();
+	        while (iit.hasNext()) {
+	            Map.Entry ipair = (Map.Entry)iit.next();
+	            System.out.println(ipair.getKey() + " = " + ipair.getValue());
+	        }
+	    }
+		
+		/* bool success = */ traverser.traverseDestTree(vars);
 	}
 	
 	

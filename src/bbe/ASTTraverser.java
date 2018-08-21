@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 import org.eclipse.jdt.core.dom.AST;
@@ -12,7 +13,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.github.gumtreediff.utils.Pair;
 
-public class ParallelASTTraverser 
+public class ASTTraverser 
 {
 	
 	public static CompilationUnit createCompilationUnit(String code)
@@ -46,7 +47,7 @@ public class ParallelASTTraverser
 	private ArrayList<Pair<String, String>> renames;
 	
 	
-	public ParallelASTTraverser(String srcPath, String destPath, ArrayList<Pair<String, String>> renames) throws IOException
+	public ASTTraverser(String srcPath, String destPath, ArrayList<Pair<String, String>> renames) throws IOException
 	{
 		this.srcUnit = createCompilationUnit(readSource(srcPath));
 		this.destUnit = createCompilationUnit(readSource(destPath));
@@ -54,11 +55,17 @@ public class ParallelASTTraverser
 	}
 	
 	
-	// TODO this method should return an indicator value, still thinking what it should be
-	public void traverse()
+	public HashMap<Integer, HashMap<String, Integer>> traverseSrcTree()
 	{
-		// TODO need to make this work in parallel
-		this.srcUnit.accept(new CustomASTVisitor());
-		this.destUnit.accept(new CustomASTVisitor());
+		SrcASTVisitor visitor = new SrcASTVisitor();
+		this.srcUnit.accept(visitor);
+		return visitor.getDeclaredVars();
+	}
+	
+	public void traverseDestTree(HashMap<Integer, HashMap<String, Integer>> expectedVars)
+	{
+		DestASTVisitor visitor = new DestASTVisitor(expectedVars);
+		this.destUnit.accept(visitor);
+		// return indicator of success
 	}
 }

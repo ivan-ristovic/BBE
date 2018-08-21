@@ -1,33 +1,64 @@
 package bbe;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.jdt.core.dom.*;
 
 
 @SuppressWarnings("unchecked")
-public class CustomASTVisitor extends ASTVisitor
+public class SrcASTVisitor extends ASTVisitor
 {
-	private HashMap<String, Integer> vars;
+	private HashMap<Integer, HashMap<String, Integer>> blockVars;
 
-	public CustomASTVisitor()
+	
+	public SrcASTVisitor()
 	{
-		this.vars = new HashMap<String, Integer>();
+		this.blockVars = new HashMap<Integer, HashMap<String, Integer>>();
+		this.blockVars.put(0, new HashMap<String, Integer>());
 	}
 	
 	
-	public boolean visit(VariableDeclarationStatement node) {
+	public HashMap<Integer, HashMap<String, Integer>> getDeclaredVars() 
+	{
+		return this.blockVars;
+	}
+
+	public boolean visit(Block node) 
+	{
+		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
+		this.blockVars.put(parentDepth + 1, new HashMap<String, Integer>(this.blockVars.get(parentDepth)));
+		return true;
+	}
+
+	public void endVisit(Block node) 
+	{	
+		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
+		int currentDepth = parentDepth + 1;
+		Iterator<Entry<String, Integer>> it = this.blockVars.get(currentDepth).entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
+	        this.blockVars.get(parentDepth).computeIfPresent(pair.getKey(), (k, v) -> pair.getValue());
+	    }
+	}
+	
+	public boolean visit(VariableDeclarationStatement node) 
+	{
 		Type type = node.getType();
 		for (Modifier modifier : (List<Modifier>)node.modifiers()) {
 			// TODO check modifiers for each variable if they match in both files
+			// if we want to support modifiers, then the var value in map has to be a class type :(
 		}
 		return true;
 	}
 	
-	public boolean visit(VariableDeclarationFragment node) {
+	public boolean visit(VariableDeclarationFragment node) 
+	{
+		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
 		SimpleName name = node.getName();
-		
 		Expression expr = node.getInitializer();
 		
 		int value = 0;
@@ -45,19 +76,21 @@ public class CustomASTVisitor extends ASTVisitor
 			// If right side is simple name ex. x = y
 			else if (expr.getNodeType() == Type.SIMPLE_NAME) {
 				// If it is variable and we have it in map
-				if (this.vars.containsKey(expr + ""))
-					value = this.vars.get(expr + "");
+				if (this.blockVars.get(blockHashCode).containsKey(expr + ""))
+					value = this.blockVars.get(blockHashCode).get(expr + "");
 				else 
 					value = Integer.MAX_VALUE;
 			}
 		}
 		
-		vars.put(new String(name + ""), value);
+		this.blockVars.get(blockHashCode).put(new String(name + ""), value);
 
 		return false;
 	}
 
-	public boolean visit(Assignment node) {
+	public boolean visit(Assignment node) 
+	{
+		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
 		String identifier = node.getLeftHandSide() + "";
 		String operator = node.getOperator() + "";
 		int value;
@@ -72,20 +105,20 @@ public class CustomASTVisitor extends ASTVisitor
 		//Case where we have one variable on the right side
 		else {
 			String rightSideIdentifier = node.getRightHandSide() + "";
-			value = this.vars.get(rightSideIdentifier);
+			value = this.blockVars.get(blockHashCode).get(rightSideIdentifier);
 		}
 			
 		int valueOfVar = 0;
 		
-		if (this.vars.containsKey(identifier)) {
-			valueOfVar = this.vars.get(identifier);
+		if (this.blockVars.get(blockHashCode).containsKey(identifier)) {
+			valueOfVar = this.blockVars.get(blockHashCode).get(identifier);
 			
 			if (operator.equals("+="))
-				this.vars.replace(identifier, valueOfVar + value);
+				this.blockVars.get(blockHashCode).replace(identifier, valueOfVar + value);
 			else if (operator.equals("-="))
-				this.vars.replace(identifier, valueOfVar - value);
+				this.blockVars.get(blockHashCode).replace(identifier, valueOfVar - value);
 			else if (operator.equals("="))
-				this.vars.replace(identifier, value);
+				this.blockVars.get(blockHashCode).replace(identifier, value);
 		}
 	
 		return true;
@@ -94,17 +127,18 @@ public class CustomASTVisitor extends ASTVisitor
 	// Prefix expressions ex. ++x
 	public boolean visit(PrefixExpression node)
 	{
+		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
 		int valueOfVar = 0;
 		
-		if (this.vars.containsKey(identifier)) {
-			valueOfVar = this.vars.get(identifier);
+		if (this.blockVars.get(blockHashCode).containsKey(identifier)) {
+			valueOfVar = this.blockVars.get(blockHashCode).get(identifier);
 			
 			if (operator.equals("++"))
-				this.vars.replace(identifier, valueOfVar + 1);
+				this.blockVars.get(blockHashCode).replace(identifier, valueOfVar + 1);
 			else if (operator.equals("--"))
-				this.vars.replace(identifier, valueOfVar - 1);
+				this.blockVars.get(blockHashCode).replace(identifier, valueOfVar - 1);
 		}
 
 		return true;
@@ -113,17 +147,18 @@ public class CustomASTVisitor extends ASTVisitor
 	// Postfix expressions ex. x++
 	public boolean visit(PostfixExpression node)
 	{
+		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
 		int valueOfVar = 0;
 		
-		if (this.vars.containsKey(identifier)) {
-			valueOfVar = this.vars.get(identifier);
+		if (this.blockVars.get(blockHashCode).containsKey(identifier)) {
+			valueOfVar = this.blockVars.get(blockHashCode).get(identifier);
 			
 			if (operator.equals("++"))
-				this.vars.replace(identifier, valueOfVar + 1);
+				this.blockVars.get(blockHashCode).replace(identifier, valueOfVar + 1);
 			else if (operator.equals("--"))
-				this.vars.replace(identifier, valueOfVar - 1);
+				this.blockVars.get(blockHashCode).replace(identifier, valueOfVar - 1);
 		}
 
 		return true;
@@ -132,10 +167,11 @@ public class CustomASTVisitor extends ASTVisitor
 	// Infix expressions ex. x + y
 	public int visitInfix(InfixExpression node)
 	{
+		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
 		String leftIdentifier = node.getLeftOperand() + "";
 		String rightIdentifier = node.getRightOperand() + "";
-		int leftSideValue = this.vars.get(leftIdentifier) != null ? this.vars.get(leftIdentifier) : Integer.parseInt(leftIdentifier);
-		int rightSideValue = this.vars.get(rightIdentifier) != null ? this.vars.get(rightIdentifier) : Integer.parseInt(rightIdentifier);
+		int leftSideValue = this.blockVars.get(blockHashCode).get(leftIdentifier) != null ? this.blockVars.get(blockHashCode).get(leftIdentifier) : Integer.parseInt(leftIdentifier);
+		int rightSideValue = this.blockVars.get(blockHashCode).get(rightIdentifier) != null ? this.blockVars.get(blockHashCode).get(rightIdentifier) : Integer.parseInt(rightIdentifier);
 		
 		String operator = node.getOperator() + "";
 		
@@ -155,32 +191,6 @@ public class CustomASTVisitor extends ASTVisitor
 		// Some dummy default return value, will never come here
 		return 0;
 	}
-
-	public boolean visit(Block node) {
-		System.out.println("--- BLOCK ---");
-		
-		// perform var checks here
-		
-		return true;
-	}
-
-	@SuppressWarnings("unchecked")
-	public boolean visit(MethodDeclaration node) {
-		System.out.println("--- METHOD DECLARATION ---");
-		SimpleName name = node.getName();
-		StringBuilder sb = new StringBuilder();
-		for (Modifier m : (List<Modifier>)node.modifiers()) {
-			sb.append(m.getKeyword().toString());
-			sb.append(' ');
-		}
-
-		return true;
-	}
-
-	public boolean visit(MethodInvocation node) {
-		SimpleName name = node.getName();
-		return true;
-	}
 	
 	public boolean visit(ReturnStatement node)
 	{
@@ -194,10 +204,8 @@ public class CustomASTVisitor extends ASTVisitor
 		else if (expr.getNodeType() == Type.INFIX_EXPRESSION)
 			value = visitInfix((InfixExpression)expr);
 		else if (expr.getNodeType() == Type.SIMPLE_NAME)
-			value = this.vars.get(expr + "");
+			value = this.blockVars.get(ASTNodeUtils.getBlockDepth(node)).get(expr + "");
 		
 		return true;
-	}
-
-	
+	}	
 }

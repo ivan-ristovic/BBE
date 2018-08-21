@@ -8,6 +8,8 @@ public class A
         int jot, k, r = 0;
         ArrayList<Integer> al = new ArrayList<Integer>();
         
+        fooint = 4;
+        
         jot = 345;
         
         i += 5;
