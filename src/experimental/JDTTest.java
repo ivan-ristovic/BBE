@@ -1,10 +1,13 @@
 package experimental;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
 import org.eclipse.jdt.core.dom.*;
+
+import com.github.gumtreediff.utils.Pair;
 
 public class JDTTest 
 {
@@ -22,6 +25,10 @@ public class JDTTest
 			parser.setResolveBindings(true);
 			
 			final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+			MappingFactory mFactory = new MappingFactory("tests/test1.java", "tests/test2.java");
+			
+			ArrayList<Pair<String, String>> updates = mFactory.getUpdates();
 			
 			cu.accept(new ASTVisitor() {
 	 
@@ -69,6 +76,7 @@ public class JDTTest
 					vars.put(new String(name + ""), value);
 					
 					System.out.println("Declaration of '" + name.getIdentifier() + "' at line " + cu.getLineNumber(name.getStartPosition()) + " with value " + this.vars.get(name.getIdentifier()));
+					
 					return false;
 				}
 	 
@@ -178,8 +186,6 @@ public class JDTTest
 							return leftSideValue / rightSideValue;
 						case "%":
 							return leftSideValue % rightSideValue;
-						case "<":
-							System.out.println("analizaaaa");
 					}
 					
 					// Some dummy default return value, will never come here
@@ -188,7 +194,6 @@ public class JDTTest
 				
 				public boolean visit(Block node) {
 					System.out.println("--- BLOCK ---");
-					
 					// perform var checks here
 					
 					return true;
@@ -391,9 +396,69 @@ public class JDTTest
 					
 					return !failure;
 				}
+
+				public boolean checkDeclarations(VariableDeclarationFragment declaration1, VariableDeclarationFragment declaration2)
+				{
+					Expression initializer1 = declaration1.getInitializer();
+					Expression initializer2 = declaration1.getInitializer();
+					
+					String replacement = "";
+					
+					boolean failure = false;
+					
+					// If we have one only initializer
+					if (initializer1 != null && initializer2 == null) {
+						System.out.println(initializer1 + " should be added");
+						failure = true;
+					}
+					else if (initializer1 == null && initializer2 != null) {
+						System.out.println(initializer2 + " is extra");
+						failure = true;
+					}
+					else if (initializer1 != null && initializer2 != null) {
+						if (initializer1.getNodeType() == Type.NUMBER_LITERAL) {
+							if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
+								if (!checkNumbers(initializer1, initializer2)) {
+									System.out.println(initializer2 + " should be replaced with " + initializer1);
+									failure = true;
+								}
+							}
+							else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
+								if (!checkVariableAndNumber(initializer2.toString(), initializer1)) {
+									System.out.println(initializer2 + " should be replaced with " + initializer1);
+									failure = true;
+								}
+							}
+						}
+						else if (initializer1.getNodeType() == Type.SIMPLE_NAME) {
+							if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
+								if (!checkVariableAndNumber(initializer1.toString(), initializer2)) {
+									System.out.println(initializer2 + " should be replaced with " + initializer1);
+									failure = true;
+								}
+							}
+							else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
+								if (!checkVariables(initializer1.toString(), initializer2.toString(), replacement)) {
+									System.out.println(initializer2 + " should be replaced with " + replacement);
+									failure = true;
+								}
+							}
+						}
+						else if (initializer1.getNodeType() == Type.INFIX_EXPRESSION) {
+							if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
+								if (!checkInfix((InfixExpression)initializer1, (InfixExpression)initializer2)) {
+									System.out.println(initializer2 + " should be replaced with " + initializer1);
+									failure = true;
+								}
+							}
+						}
+					}
+					
+					return !failure;
+				}
 				
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+				
 				@SuppressWarnings("unchecked")
 				public boolean visit(MethodDeclaration node) {
 					System.out.println("--- METHOD DECLARATION ---");
@@ -410,6 +475,12 @@ public class JDTTest
 				public boolean visit(MethodInvocation node) {
 					SimpleName name = node.getName();
 					System.out.println("Invocation of method '" + name + "' at line " + cu.getLineNumber(name.getStartPosition()));
+					return true;
+				}
+				
+				public boolean visit(IfStatement node) {
+					System.out.println("If: " + node.getExpression());
+					
 					return true;
 				}
 				
