@@ -621,6 +621,82 @@ public class JDTTest
 					return !failure;
 				}
 				
+								// In functions before, we knew what statement was from what (correct or wrong) code, 
+				// Here we dont, so we have and indicator that says if assignmnet or expression is from correct code
+				// Possible values for indicator are assignment and expression
+				// Function now works only for cases where += 1 or -= 1 like x += 1 / a++ or x -= 1 / a--
+				public boolean checkAssignmentAndPrefixPostfix(Assignment assignment, Expression expression, String indicator) 
+				{
+					boolean failure = false;
+					
+					String assignmentOperator = assignment.getOperator().toString();
+					String variable1 = assignment.getLeftHandSide().toString();
+					
+					String prefixPostfixOperator = "";
+					String variable2 = "";
+					
+					String replacement = "";
+
+					if (expression instanceof PrefixExpression) {
+						prefixPostfixOperator = ((PrefixExpression)expression).getOperator().toString();
+						variable2 = ((PrefixExpression)expression).getOperand().toString();
+					}
+					
+					if (expression instanceof PostfixExpression) {
+						prefixPostfixOperator = ((PostfixExpression)expression).getOperator().toString();
+						variable2 = ((PostfixExpression)expression).getOperand().toString();
+					}
+					
+					if (indicator.equals("assignment")) {
+						if (assignmentOperator.equals("=")) {
+							System.out.println(prefixPostfixOperator + " should be replaced with " + assignmentOperator);
+							failure = true;
+						}
+						if (assignmentOperator.equals("+=")) {
+							if (prefixPostfixOperator.equals("--")) {
+								System.out.println(prefixPostfixOperator + " should be replaced with ++");
+								failure = true;
+							}
+						}
+						else if (assignmentOperator.equals("-=")) {
+							if (prefixPostfixOperator.equals("++")) {
+								System.out.println(prefixPostfixOperator + " should be replaced with --" + assignmentOperator);
+								failure = true;
+							}
+						}
+						
+						if (!checkVariables(variable1, variable2, replacement)) {
+							System.out.println(variable2 + " should be replaced with " + replacement);
+							failure = true;
+						}
+					}
+					else {
+						if (assignmentOperator.equals("=")) {
+							System.out.println(assignmentOperator + " should be replaced with " + prefixPostfixOperator);
+							failure = true;
+						}
+						if (assignmentOperator.equals("+=")) {
+							if (prefixPostfixOperator.equals("--")) {
+								System.out.println(assignmentOperator + " should be replaced with -=");
+								failure = true;
+							}
+						}
+						else if (assignmentOperator.equals("-=")) {
+							if (prefixPostfixOperator.equals("++")) {
+								System.out.println(assignmentOperator + " should be replaced with +=");
+								failure = true;
+							}
+						}
+						
+						if (!checkVariables(variable1, variable2, replacement)) {
+							System.out.println(variable1 + " should be replaced with " + replacement);
+							failure = true;
+						}
+					}
+						
+					return !failure;
+				}
+				
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				
 				@SuppressWarnings("unchecked")
