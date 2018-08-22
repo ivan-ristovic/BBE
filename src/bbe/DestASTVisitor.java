@@ -25,7 +25,7 @@ public class DestASTVisitor extends ASTVisitor
 		Iterator<Entry<Integer, BlockVariableMap>> it = this.expectedVars.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
-	        pair.getValue().renameVars(renames);
+	        // pair.getValue().renameVars(renames);
 	    }
 	}
 	
