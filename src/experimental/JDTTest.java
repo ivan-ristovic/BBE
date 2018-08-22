@@ -666,7 +666,7 @@ public class JDTTest
 								if (initializer == 1)
 									System.out.println(prefixPostfixOperator + " should be replaced with ++");
 								else 
-									System.out.println(prefixPostfixOperator + " should be replaced with " + initializer + " times ++");
+									System.out.println(prefixPostfixOperator + " should be replaced with " + initializer + " times ++ or +=" + initializer);
 								failure = true;
 							}
 						}
@@ -675,7 +675,7 @@ public class JDTTest
 								if (initializer == 1)
 									System.out.println(prefixPostfixOperator + " should be replaced with --");
 								else 
-									System.out.println(prefixPostfixOperator + " should be replaced with " + initializer + " times --");
+									System.out.println(prefixPostfixOperator + " should be replaced with " + initializer + " times -- or -=" + initializer);
 								failure = true;
 							}
 						}
