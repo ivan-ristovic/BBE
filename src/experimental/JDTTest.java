@@ -621,7 +621,7 @@ public class JDTTest
 					return !failure;
 				}
 				
-								// In functions before, we knew what statement was from what (correct or wrong) code, 
+				// In functions before, we knew what statement was from what (correct or wrong) code, 
 				// Here we dont, so we have and indicator that says if assignmnet or expression is from correct code
 				// Possible values for indicator are assignment and expression
 				// Function now works only for cases where += 1 or -= 1 like x += 1 / a++ or x -= 1 / a--
@@ -636,6 +636,15 @@ public class JDTTest
 					String variable2 = "";
 					
 					String replacement = "";
+
+					int initializer = 0;
+					
+					Expression rightSide = assignment.getRightHandSide();
+					
+					if (rightSide.getNodeType() == Type.NUMBER_LITERAL)
+						initializer = Integer.parseInt(rightSide.toString());
+					else if (rightSide.getNodeType() == Type.SIMPLE_NAME) 
+						initializer = this.vars.get(rightSide);
 
 					if (expression instanceof PrefixExpression) {
 						prefixPostfixOperator = ((PrefixExpression)expression).getOperator().toString();
@@ -654,13 +663,19 @@ public class JDTTest
 						}
 						if (assignmentOperator.equals("+=")) {
 							if (prefixPostfixOperator.equals("--")) {
-								System.out.println(prefixPostfixOperator + " should be replaced with ++");
+								if (initializer == 1)
+									System.out.println(prefixPostfixOperator + " should be replaced with ++");
+								else 
+									System.out.println(prefixPostfixOperator + " should be replaced with " + initializer + " times ++");
 								failure = true;
 							}
 						}
 						else if (assignmentOperator.equals("-=")) {
 							if (prefixPostfixOperator.equals("++")) {
-								System.out.println(prefixPostfixOperator + " should be replaced with --" + assignmentOperator);
+								if (initializer == 1)
+									System.out.println(prefixPostfixOperator + " should be replaced with --");
+								else 
+									System.out.println(prefixPostfixOperator + " should be replaced with " + initializer + " times --");
 								failure = true;
 							}
 						}
@@ -677,13 +692,13 @@ public class JDTTest
 						}
 						if (assignmentOperator.equals("+=")) {
 							if (prefixPostfixOperator.equals("--")) {
-								System.out.println(assignmentOperator + " should be replaced with -=");
+								System.out.println(assignmentOperator + " should be replaced with -= 1");
 								failure = true;
 							}
 						}
 						else if (assignmentOperator.equals("-=")) {
 							if (prefixPostfixOperator.equals("++")) {
-								System.out.println(assignmentOperator + " should be replaced with +=");
+								System.out.println(assignmentOperator + " should be replaced with += 1");
 								failure = true;
 							}
 						}
