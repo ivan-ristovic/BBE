@@ -55,14 +55,14 @@ public class ASTTraverser
 	}
 	
 	
-	public HashMap<Integer, VariableMap> traverseSrcTree()
+	public HashMap<Integer, BlockVariableMap> traverseSrcTree()
 	{
 		SrcASTVisitor visitor = new SrcASTVisitor();
 		this.srcUnit.accept(visitor);
 		return visitor.getDeclaredVars();
 	}
 	
-	public void traverseDestTree(HashMap<Integer, VariableMap> expectedVars)
+	public void traverseDestTree(HashMap<Integer, BlockVariableMap> expectedVars)
 	{
 		DestASTVisitor visitor = new DestASTVisitor(expectedVars, renames);
 		this.destUnit.accept(visitor);

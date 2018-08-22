@@ -40,7 +40,7 @@ public class Program
 			logErrorAndExit("failed to load the source files");
 		}
 		
-		HashMap<Integer, VariableMap> vars = traverser.traverseSrcTree();
+		HashMap<Integer, BlockVariableMap> vars = traverser.traverseSrcTree();
 		
 		Iterator it = vars.entrySet().iterator();
 	    while (it.hasNext()) {

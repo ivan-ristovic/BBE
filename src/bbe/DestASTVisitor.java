@@ -14,17 +14,17 @@ import com.github.gumtreediff.utils.Pair;
 @SuppressWarnings("unchecked")
 public class DestASTVisitor extends ASTVisitor
 {
-	private HashMap<Integer, VariableMap> expectedVars;
+	private HashMap<Integer, BlockVariableMap> expectedVars;
 	private ArrayList<Block> conflictingBlocks;
 	private ArrayList<String> conflictingVars;
 
 	
-	public DestASTVisitor(HashMap<Integer, VariableMap> expectedVars, ArrayList<Pair<String, String>> renames)
+	public DestASTVisitor(HashMap<Integer, BlockVariableMap> expectedVars, ArrayList<Pair<String, String>> renames)
 	{
 		this.expectedVars = expectedVars;
-		Iterator<Entry<Integer, VariableMap>> it = this.expectedVars.entrySet().iterator();
+		Iterator<Entry<Integer, BlockVariableMap>> it = this.expectedVars.entrySet().iterator();
 	    while (it.hasNext()) {
-	        Map.Entry<Integer, VariableMap> pair = (Map.Entry<Integer, VariableMap>)it.next();
+	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
 	        pair.getValue().renameVars(renames);
 	    }
 	}
