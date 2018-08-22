@@ -192,8 +192,14 @@ public class JDTTest
 				}
 				
 				public boolean visit(Block node) {
-					System.out.println("--- BLOCK ---");
-					// perform var checks here
+					List<Statement> statements = node.statements();
+					ReturnStatement s1;
+					for (Statement s : statements) {
+						if (s.getNodeType() == Type.RETURN_STATEMENT) {
+							s1 = (ReturnStatement)s;
+							System.out.println("Returning " + s1.getExpression() + " ");
+						}
+					}
 					
 					return true;
 				}
