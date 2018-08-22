@@ -16,7 +16,7 @@ import com.github.gumtreediff.utils.Pair;
 public class BlockVariableMap extends HashMap<String, Integer>
 {
 	private static final long serialVersionUID = 1L;
-	//private ArrayList<Pair<String, String>> updates;  TODO remove
+	private ArrayList<Pair<String, String>> updates;
 	
 	
 	public BlockVariableMap()
@@ -28,15 +28,6 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	{
 		super(map);
 	}
-	
-	
-	public void renameVars(ArrayList<Pair<String, String>> renames)
-	{
-		for (Pair<String, String> pair : renames) {
-			// TODO rename
-		}
-	}
-	
 	
 	private Pair<String, String> getRenamePair(String variable1)
 	{
