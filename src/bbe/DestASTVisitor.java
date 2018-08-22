@@ -2,6 +2,9 @@ package bbe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.jdt.core.dom.*;
 
@@ -11,28 +14,29 @@ import com.github.gumtreediff.utils.Pair;
 @SuppressWarnings("unchecked")
 public class DestASTVisitor extends ASTVisitor
 {
-	private HashMap<Integer, HashMap<String, Integer>> expectedVars;
-	private boolean conflictFound;
-	private String errorMessage;
+	private HashMap<Integer, VariableMap> expectedVars;
+	private ArrayList<Block> conflictingBlocks;
+	private ArrayList<String> conflictingVars;
 
 	
-	public DestASTVisitor(HashMap<Integer, HashMap<String, Integer>> expectedVars, ArrayList<Pair<String, String>> renames)
+	public DestASTVisitor(HashMap<Integer, VariableMap> expectedVars, ArrayList<Pair<String, String>> renames)
 	{
 		this.expectedVars = expectedVars;
-		for (Pair<String, String> pair : renames) {
-			// TODO rename vars in this.expectedVars
-		}
-		this.conflictFound = false;
+		Iterator<Entry<Integer, VariableMap>> it = this.expectedVars.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry<Integer, VariableMap> pair = (Map.Entry<Integer, VariableMap>)it.next();
+	        pair.getValue().renameVars(renames);
+	    }
 	}
 	
-	
-	public boolean isConflictFound()
+
+	public ArrayList<Block> getConflictingBlocks()
 	{
-		return conflictFound;
+		return this.conflictingBlocks;
 	}
-	
-	public String getErrorMessage()
+
+	public ArrayList<String> getConflictingVars()
 	{
-		return errorMessage;
+		return this.conflictingVars;
 	}
 }

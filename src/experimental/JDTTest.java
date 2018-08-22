@@ -27,7 +27,6 @@ public class JDTTest
 			final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 			MappingFactory mFactory = new MappingFactory("tests/test1.java", "tests/test2.java");
-			
 			ArrayList<Pair<String, String>> updates = mFactory.getUpdates();
 			
 			cu.accept(new ASTVisitor() {

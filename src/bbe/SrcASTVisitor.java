@@ -12,17 +12,17 @@ import org.eclipse.jdt.core.dom.*;
 @SuppressWarnings("unchecked")
 public class SrcASTVisitor extends ASTVisitor
 {
-	private HashMap<Integer, HashMap<String, Integer>> blockVars;
+	private HashMap<Integer, VariableMap> blockVars;
 
 	
 	public SrcASTVisitor()
 	{
-		this.blockVars = new HashMap<Integer, HashMap<String, Integer>>();
-		this.blockVars.put(0, new HashMap<String, Integer>());
+		this.blockVars = new HashMap<Integer, VariableMap>();
+		this.blockVars.put(0, new VariableMap());
 	}
 	
 	
-	public HashMap<Integer, HashMap<String, Integer>> getDeclaredVars() 
+	public HashMap<Integer, VariableMap> getDeclaredVars() 
 	{
 		return this.blockVars;
 	}
@@ -30,7 +30,7 @@ public class SrcASTVisitor extends ASTVisitor
 	public boolean visit(Block node) 
 	{
 		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
-		this.blockVars.put(parentDepth + 1, new HashMap<String, Integer>(this.blockVars.get(parentDepth)));
+		this.blockVars.put(parentDepth + 1, new VariableMap(this.blockVars.get(parentDepth)));
 		return true;
 	}
 
