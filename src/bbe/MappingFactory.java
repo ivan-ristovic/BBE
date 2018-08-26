@@ -69,7 +69,7 @@ public class MappingFactory
 				return false;
 			}
 			catch(NumberFormatException e) {
-				System.out.println("[Warning] Simple var name changed from " + q.getNode().getLabel() + " to " + q.getValue() + ".");
+				Logger.logWarning("Simple var name changed from " + q.getNode().getLabel() + " to " + q.getValue() + ".");
 				continue;
 			}
 		}

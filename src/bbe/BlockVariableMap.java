@@ -89,7 +89,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		return true;
 	}
 	
-	private boolean getinfixLogicalExpressionValue (InfixExpression expression)
+	private boolean getInfixLogicalExpressionValue (InfixExpression expression)
 	{
 		Expression left = expression.getLeftOperand();
 		Expression right = expression.getRightOperand();

@@ -9,8 +9,7 @@ import java.util.Map;
 import com.github.gumtreediff.utils.Pair;
 
 public class Program 
-{
-
+{	
 	// TODO remove hardcoded paths everywhere and allow args
 	public static void main(String[] args) 
 	{
@@ -37,7 +36,7 @@ public class Program
 		try {
 			traverser = new ASTTraverser(/*args[1]*/ "tests/test3.java", /*args[2]*/ "tests/test3dest.java", mf.getUpdates());
 		} catch (IOException e) {
-			logErrorAndExit("failed to load the source files");
+			logErrorAndExit("Failed to load the source files");
 		}
 		
 		HashMap<Integer, BlockVariableMap> vars = traverser.traverseSrcTree();
