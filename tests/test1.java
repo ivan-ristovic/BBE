@@ -38,11 +38,4 @@ public class A
         int a = 5, b = 6;
         return x;
     }
-    
-    int foo (int a, int b)
-    {
-    	int x = a + b;
-    	
-    	return x;
-    }
 }

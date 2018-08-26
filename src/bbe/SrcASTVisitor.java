@@ -30,7 +30,7 @@ public class SrcASTVisitor extends ASTVisitor
 	public boolean visit(Block node) 
 	{
 		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
-		this.blockVars.put(parentDepth + 1, new BlockVariableMap(this.blockVars.get(parentDepth)));
+		this.blockVars.put(parentDepth + 1, new BlockVariableMap(this.blockVars.get(parentDepth), null, node));
 		return true;
 	}
 

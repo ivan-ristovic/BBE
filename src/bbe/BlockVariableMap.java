@@ -12,24 +12,37 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import com.github.gumtreediff.utils.Pair;
+import org.eclipse.jdt.core.dom.Block;
 
 public class BlockVariableMap extends HashMap<String, Integer>
 {
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Pair<String, String>> updates;
-	
+	private Block currentBlock = null;
 	
 	public BlockVariableMap()
 	{
 		super();
 	}
 	
-	public BlockVariableMap(BlockVariableMap map)
+	public BlockVariableMap(ArrayList<Pair<String, String>> updates)
 	{
-		super(map);
+		super();
+		this.updates = updates;
 	}
 	
-	private Pair<String, String> getRenamePair(String variable1)
+	public BlockVariableMap(BlockVariableMap map, ArrayList<Pair<String, String>> updates, Block currentBlock)
+	{
+		super(map);
+		this.updates = updates;
+		this.currentBlock = currentBlock;
+	}
+
+	public Block getCurrentBlock() {
+		return currentBlock;
+	}
+	
+	public Pair<String, String> getRenamePair(String variable1)
 	{
 		for (Pair<String, String> pair : updates)
 			if (pair.first.equals(variable1))

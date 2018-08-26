@@ -20,7 +20,7 @@ public class Program
 		
 		MappingFactory mf = null;
 		try {
-			mf = new MappingFactory(/*args[1]*/ "tests/test1.java", /*args[2]*/ "tests/test2.java");
+			mf = new MappingFactory(/*args[1]*/ "tests/test3.java", /*args[2]*/ "tests/test3dest.java");
 		} catch (IOException e1) {
 			logErrorAndExit("failed to create mapping");
 		}
@@ -35,7 +35,7 @@ public class Program
 		
 		ASTTraverser traverser = null;
 		try {
-			traverser = new ASTTraverser(/*args[1]*/ "tests/test1.java", /*args[2]*/ "tests/test2.java", mf.getUpdates());
+			traverser = new ASTTraverser(/*args[1]*/ "tests/test3.java", /*args[2]*/ "tests/test3dest.java", mf.getUpdates());
 		} catch (IOException e) {
 			logErrorAndExit("failed to load the source files");
 		}

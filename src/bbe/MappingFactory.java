@@ -53,9 +53,20 @@ public class MappingFactory
 	public boolean hasOnlyUpdateActions()
 	{
 		ActionGenerator g = new ActionGenerator(t1, t2, this.matcher.getMappings());
-		for (Action action : g.generate())
+		for (Action action : g.generate()) {
 			if (!(action instanceof Update))
 				return false;
+			Update q = (Update)action;
+			try {
+				int old = Integer.parseInt(q.getNode().getLabel());
+				int n = Integer.parseInt(q.getValue());
+				return false;
+			}
+			catch(NumberFormatException e) {
+				System.out.println("[Warning] Simple var name changed from " + q.getNode().getLabel() + " to " + q.getValue() + ".");
+				continue;
+			}
+		}
 		return true;
 	}
 }
