@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.felix.resolver.Logger;
 import org.eclipse.jdt.core.dom.*;
 
 import com.github.gumtreediff.utils.Pair;
@@ -75,16 +74,16 @@ public class DestASTVisitor extends ASTVisitor
 			int srcValue = this.expectedVars.get(currentDepth).get(pair.getKey());
 			int destValue = this.blockVars.get(currentDepth).get(name);
 			if (srcValue != destValue) {
-				bbe.Logger.logError("Different value of variable: " + pair.getKey() + "(" + srcValue + ") != " + name + "(" + destValue + ")");
+				Logger.logError("Different value of variable: " + pair.getKey() + "(" + srcValue + ") != " + name + "(" + destValue + ")");
 				conflictingVars.add(pair.getKey());
 				hasBlockConflicts = true;
 			}
 	    }
-	    bbe.Logger.logInfo("Block (" + currentDepth + ") traversed with conflicts: " + hasBlockConflicts);
+	    Logger.logInfo("Block (" + currentDepth + ") traversed with conflicts: " + hasBlockConflicts);
 	    if (hasBlockConflicts)
 	    {
-	    	bbe.Logger.logInfo("Conflicting vars: " + conflictingVars.toString());
-	    	bbe.Logger.logInfo("Deep diving into into block ( " + currentDepth + ")");
+	    	Logger.logInfo("Conflicting vars: " + conflictingVars.toString());
+	    	Logger.logInfo("Deep diving into into block (" + currentDepth + ")");
 		    Block sourceBlock = this.expectedVars.get(currentDepth).getCurrentBlock();
 		    compareBlocks(sourceBlock, node, conflictingVars);
 	    }
@@ -93,7 +92,7 @@ public class DestASTVisitor extends ASTVisitor
 	private boolean compareBlocks(Block src, Block dest, ArrayList<String> conflictingVars) 
 	{
 		int id = ASTNodeUtils.getBlockDepth(src);
-		bbe.Logger.logInfo("Comparing blocks with id (" + id + ") with conflicting vars (" + conflictingVars + ")");
+		Logger.logInfo("Comparing blocks with id (" + id + ") with conflicting vars (" + conflictingVars + ")");
 	    
 	    List<Statement> srcStatements = src.statements();
 	    List<Statement> destStatements = dest.statements();

@@ -9,19 +9,14 @@ import java.time.LocalDateTime;
 
 public class Logger
 {
-	private static String pathToFile = null;
+	public static String pathToFile = null;
+	private static Writer writer = null;
 
 	public Logger()
 	{
 		
 	}
-	
-	public Logger(String pathToFile)
-	{
-		this.pathToFile = pathToFile;
 		
-	}
-	
 	public static void logInfo(String message)
 	{
 		log("[INFO]", message);
@@ -37,19 +32,39 @@ public class Logger
 		log("[ERROR]", message);		
 	}
 	
+	public static void logErrorAndExit(String message)
+	{
+		logError(message);
+		System.exit(1);
+	}
+	
 	private static void log(String messageType, String message)
 	{
 		String fullMessage = LocalDateTime.now().toLocalTime() + " " + messageType +  " " + message;
 	    System.out.println(fullMessage);
-	    /*
 	    if (pathToFile != null) {
 	    	try {
-	    		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.pathToFile), "utf-8"));
-	    		writer.write(fullMessage);
+	    		if (writer == null)
+	    			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pathToFile)));
+		    	writer.append(fullMessage + "\n");
+	    		writer.flush();
 	    	}
 	    	catch (IOException ex) {
-	    	    System.out.println(LocalDateTime.now() + " Cannot open file '" + this.pathToFile + "'.");
-	    	} 	  
-	    }*/
+	    	    System.out.println("[ERROR] " + LocalDateTime.now() + " Cannot open file '" + pathToFile + "'.");
+	    	}
+	    }
 	}
+
+	public static boolean closeWriter()
+	{
+		if (writer != null)
+			try {
+				logInfo("Closing writer to file '" + pathToFile + "'");
+				writer.close();
+			} catch (IOException e) {
+				return false;
+			}
+		return true;
+	}
+	
 }

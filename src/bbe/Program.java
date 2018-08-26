@@ -1,7 +1,6 @@
 package bbe;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -13,34 +12,46 @@ public class Program
 	// TODO remove hardcoded paths everywhere and allow args
 	public static void main(String[] args) 
 	{
-		//if (args.length != 3)
-		//	logAndExit("usage: bbe src.java dest.java");
+		Logger.pathToFile = "log.txt";
+
+		String sourceFile = null;
+		String destFile = null;
+		
+		if (args.length < 2) {
+			Logger.logInfo("Using default test files.");
+			sourceFile = "tests/test3.java";
+			destFile = "tests/test3dest.java";
+		}
+		else {
+			sourceFile = args[0];
+			destFile = args[1];
+		}
+		Logger.logInfo("Using test files: Source: " + sourceFile + ", Dest: " + destFile);
 		
 		
 		MappingFactory mf = null;
 		try {
-			mf = new MappingFactory(/*args[1]*/ "tests/test3.java", /*args[2]*/ "tests/test3dest.java");
+			mf = new MappingFactory(sourceFile, destFile);
 		} catch (IOException e1) {
-			logErrorAndExit("failed to create mapping");
+			Logger.logErrorAndExit("failed to create mapping");
 		}
 		
 		if (mf.hasOnlyUpdateActions()) {
-			System.out.println("The two given sources are semantically equivallent.");
+			Logger.logInfo("The two given sources are semantically equivallent.");
 			System.exit(0);
 		}
-		
-		
+				
 		// if they are, proceed with the JDT API AST traversal using our custom traverser
 		
 		ASTTraverser traverser = null;
 		try {
-			traverser = new ASTTraverser(/*args[1]*/ "tests/test3.java", /*args[2]*/ "tests/test3dest.java", mf.getUpdates());
+			traverser = new ASTTraverser(sourceFile, destFile, mf.getUpdates());
 		} catch (IOException e) {
-			logErrorAndExit("Failed to load the source files");
+			Logger.logErrorAndExit("Failed to load the source files");
 		}
-		
+
+		Logger.logInfo("Traversing source tree.");
 		HashMap<Integer, BlockVariableMap> vars = traverser.traverseSrcTree();
-		
 		Iterator it = vars.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pair = (Map.Entry)it.next();
@@ -51,15 +62,13 @@ public class Program
 	            System.out.println(ipair.getKey() + " = " + ipair.getValue());
 	        }
 	    }
-		
+
+		Logger.logInfo("Traversing dest tree.");
 		/* bool success = */ traverser.traverseDestTree(vars);
+		
+		
+		Logger.closeWriter();
 	}
 	
-	
-	private static void logErrorAndExit(String msg)
-	{
-		System.err.println("error: " + msg);
-		System.exit(1);
-	}
 
 }
