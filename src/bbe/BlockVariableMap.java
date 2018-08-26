@@ -52,6 +52,9 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	
 	public boolean checkVariables(String variable1, String variable2, String replacement)
 	{
+		if (variable1.equals(variable2))
+			return true;
+			
 		// We are looking for the first one (one from the correct code)
 		Pair<String, String> variablePair = this.getRenamePair(variable1);
 		if (variablePair == null) 
@@ -84,6 +87,54 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			return false;
 		
 		return true;
+	}
+	
+	private boolean getinfixLogicalExpressionValue (InfixExpression expression)
+	{
+		Expression left = expression.getLeftOperand();
+		Expression right = expression.getRightOperand();
+		String operator = expression.getOperator().toString();
+		
+		int valueLeft = 0, valueRight = 0; 
+		
+		if (left.getNodeType() == Type.NUMBER_LITERAL)
+			valueLeft = Integer.parseInt(left.toString());
+		else if (left.getNodeType() == Type.SIMPLE_NAME)
+			valueLeft = this.get(left.toString());
+		else if (left.getNodeType() == Type.INFIX_EXPRESSION)
+			valueLeft = getInfixExpressionValue((InfixExpression)left);
+		
+		if (right.getNodeType() == Type.NUMBER_LITERAL)
+			valueRight = Integer.parseInt(right.toString());
+		else if (right.getNodeType() == Type.SIMPLE_NAME)
+			valueRight = this.get(right.toString());
+		else if (right.getNodeType() == Type.INFIX_EXPRESSION)
+			valueRight = getInfixExpressionValue((InfixExpression)right);
+		
+		boolean value = false;
+		
+		switch(operator) {
+			case "<":
+				value = valueLeft < valueRight;
+				break;
+			case ">":
+				value = valueLeft > valueRight;
+				break;
+			case "<=":
+				value = valueLeft <= valueRight;
+				break;
+			case ">=":
+				value = valueLeft >= valueRight;
+				break;
+			case "==":
+				value = valueLeft == valueRight;
+				break;
+			case "!=":
+				value = valueLeft != valueRight;
+				break;
+		}
+		
+		return value;
 	}
 	
 	private int getInfixExpressionValue(InfixExpression expression)
