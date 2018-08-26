@@ -67,17 +67,25 @@ public class DestASTVisitor extends ASTVisitor
 	    it = this.expectedVars.get(currentDepth).entrySet().iterator();
 	    while (it.hasNext()) {		    
 	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
-	    	String name = pair.getKey();
-	    	Pair<String, String> rename = this.blockVars.get(currentDepth).getRenamePair(name);
-	    	name = rename != null ? rename.second : name;
-	    	// TODO check KeyNotFoundException
-			int srcValue = this.expectedVars.get(currentDepth).get(pair.getKey());
-			int destValue = this.blockVars.get(currentDepth).get(name);
-			if (srcValue != destValue) {
-				Logger.logError("Different value of variable: " + pair.getKey() + "(" + srcValue + ") != " + name + "(" + destValue + ")");
-				conflictingVars.add(pair.getKey());
+	    	String srcName = pair.getKey();
+	    	Pair<String, String> rename = this.blockVars.get(currentDepth).getRenamePair(srcName);
+	    	// If the name is not in the map, this indicates that it is the same in src and in dest.
+	    	String destName = rename != null ? rename.second : srcName;
+	    	if (destName == MappingFactory.MISSING) {
+	    		Logger.logError("Variable (" + srcName + ") doesn't exist in dest.");
+	    		// TODO should non-existing war be in conflicting vars?
+	    		conflictingVars.add(srcName);
 				hasBlockConflicts = true;
-			}
+	    	}
+	    	else {		    	
+				int srcValue = this.expectedVars.get(currentDepth).get(srcName);
+				int destValue = this.blockVars.get(currentDepth).get(destName);
+				if (srcValue != destValue) {
+					Logger.logError("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
+					conflictingVars.add(srcName);
+					hasBlockConflicts = true;
+				}
+	    	}
 	    }
 	    Logger.logInfo("Block (" + currentDepth + ") traversed with conflicts: " + hasBlockConflicts);
 	    if (hasBlockConflicts)

@@ -7,6 +7,7 @@ import com.github.gumtreediff.actions.ActionGenerator;
 import com.github.gumtreediff.actions.model.Action;
 import com.github.gumtreediff.actions.model.Delete;
 import com.github.gumtreediff.actions.model.Update;
+import com.github.gumtreediff.actions.model.Insert;
 import com.github.gumtreediff.client.Run;
 import com.github.gumtreediff.gen.Generators;
 import com.github.gumtreediff.matchers.Matcher;
@@ -20,13 +21,13 @@ public class MappingFactory
 	{
 		Run.initGenerators();
 	}
-	
+	static String MISSING = "MISSING";	
 	
 	private ITree t1;
 	private ITree t2;
 	private Matcher matcher;
 	
-	
+		
 	public MappingFactory(String src, String dest) throws IOException
 	{
 		this.t1 = Generators.getInstance().getTree(src).getRoot();
@@ -45,11 +46,25 @@ public class MappingFactory
 			if (action instanceof Update) {
 				Update upd = (Update)action;
 				renames.add(new Pair<String, String>(upd.getNode().getLabel(), upd.getValue()));
+				Logger.logInfo("Update action! adding to list: " + upd.getNode().getLabel() + ", " + upd.getValue());
 			}
 			else if (action instanceof Delete){
-				// TODO figure out what to do
-				//Delete del = (Delete)action;
-				//renames.add(new Pair<String, String>(del.getNode().getLabel(),null));
+				Delete del = (Delete)action;
+				if (del.getNode().getLabel().isEmpty())
+					continue;
+				renames.add(new Pair<String, String>(del.getNode().getLabel(), MISSING));
+				Logger.logInfo("Delete action! adding to list: " + del.getNode().getLabel() + ", " + MISSING);
+			}
+			else if (action instanceof Insert) {
+				Insert ins = (Insert)action;
+				if (ins.getNode().getLabel().isEmpty())
+					continue;
+				renames.add(new Pair<String, String>(MISSING, ins.getNode().getLabel()));
+				Logger.logInfo("Insert action! adding to list: " + MISSING + ", " + ins.getNode().getLabel());
+				
+			}
+			else {
+				Logger.logInfo("Unhandeled action! Action name" + action.getName());				
 			}
 		}
 

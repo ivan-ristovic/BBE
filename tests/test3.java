@@ -6,7 +6,6 @@ public class A
     {
         int g = 42;
         int h, l;
-        int a;
         ArrayList<Integer> ff = new ArrayList<Integer>();
     }
 }
