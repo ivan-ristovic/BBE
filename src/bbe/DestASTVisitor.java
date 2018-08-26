@@ -70,6 +70,7 @@ public class DestASTVisitor extends ASTVisitor
 	    	String name = pair.getKey();
 	    	Pair<String, String> rename = this.blockVars.get(currentDepth).getRenamePair(name);
 	    	name = rename != null ? rename.second : name;
+	    	// TODO check KeyNotFoundException
 			int srcValue = this.expectedVars.get(currentDepth).get(pair.getKey());
 			int destValue = this.blockVars.get(currentDepth).get(name);
 			if (srcValue != destValue) {
@@ -90,9 +91,15 @@ public class DestASTVisitor extends ASTVisitor
 	
 	private boolean compareBlocks(Block src, Block dest, ArrayList<String> conflictingVars) 
 	{
-		int srcDepth = ASTNodeUtils.getBlockDepth(src);
-	    System.out.println("[INFO] Comparing blocks with id (" + srcDepth + ") with conflicting vars (" + conflictingVars + ")");
-		// TODO compare blocks
+		int id = ASTNodeUtils.getBlockDepth(src);
+	    System.out.println("[INFO] Comparing blocks with id (" + id + ") with conflicting vars (" + conflictingVars + ")");
+	    
+	    List<Statement> srcStatements = src.statements();
+	    List<Statement> destStatements = dest.statements();
+		for (Statement statement : destStatements) {
+			
+		}
+	    
 		return true;
 	}
 	

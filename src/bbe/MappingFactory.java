@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import com.github.gumtreediff.actions.ActionGenerator;
 import com.github.gumtreediff.actions.model.Action;
+import com.github.gumtreediff.actions.model.Delete;
 import com.github.gumtreediff.actions.model.Update;
 import com.github.gumtreediff.client.Run;
 import com.github.gumtreediff.gen.Generators;
@@ -44,6 +45,11 @@ public class MappingFactory
 			if (action instanceof Update) {
 				Update upd = (Update)action;
 				renames.add(new Pair<String, String>(upd.getNode().getLabel(), upd.getValue()));
+			}
+			else if (action instanceof Delete){
+				// TODO figure out what to do
+				//Delete del = (Delete)action;
+				//renames.add(new Pair<String, String>(del.getNode().getLabel(),null));
 			}
 		}
 
