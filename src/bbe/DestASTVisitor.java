@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.antlr.grammar.v3.ANTLRParser.label_return;
 import org.eclipse.jdt.core.dom.*;
 
 import com.github.gumtreediff.utils.Pair;
@@ -74,8 +75,8 @@ public class DestASTVisitor extends ASTVisitor
 	    	if (destName == MappingFactory.MISSING) {
 	    		Logger.logError("Variable (" + srcName + ") doesn't exist in dest.");
 	    		// TODO should non-existing war be in conflicting vars?
-	    		conflictingVars.add(srcName);
-				hasBlockConflicts = true;
+	    		//conflictingVars.add(srcName);
+				//hasBlockConflicts = true;
 	    	}
 	    	else {		    	
 				int srcValue = this.expectedVars.get(currentDepth).get(srcName);
@@ -101,14 +102,55 @@ public class DestASTVisitor extends ASTVisitor
 	{
 		int id = ASTNodeUtils.getBlockDepth(src);
 		Logger.logInfo("Comparing blocks with id (" + id + ") with conflicting vars (" + conflictingVars + ")");
-	    
+
 	    List<Statement> srcStatements = src.statements();
 	    List<Statement> destStatements = dest.statements();
-		for (Statement statement : destStatements) {
+	    // Investigate further every conflicting var. Find all statements in which it appears in src,
+	    // and in parallel search for the equivalent in the dest.
+	    // Compare founded statements and determine the difference	    
+		for (String conflictingVar : conflictingVars) {
+			Iterator<Statement> it = destStatements.iterator();
 			
+			for (Statement srcStatement : srcStatements) {
+				if (statementContainsVar(srcStatement, conflictingVar)) {
+					boolean compared = false;
+					while(it.hasNext()) {
+						Statement destStatamenet = it.next();
+						if (statementContainsVar(destStatamenet, conflictingVar)) {
+							//TODO compare statements
+							boolean result = compareStatements(srcStatement, destStatamenet);
+							if (result == false) {
+								Logger.logError("Statements are different!" + srcStatement + " " + destStatamenet);
+								// TODO handle this!
+							}
+							compared = true;
+							break;
+						}
+					}
+					if (!compared) {
+						Logger.logError("No statement in dest that src statement '" + srcStatement + "' can comare to.");
+					}					
+
+				}				
+			}
+			// TODO check if there are statements in dest that don't exist in src
 		}
 	    
 		return true;
+	}
+	
+	private boolean compareStatements(Statement src, Statement dest)
+	{
+		Logger.logInfo("Comparing statements: src: " + src + ",  dest: " + dest);
+		
+		return false;
+	}
+	
+	private boolean statementContainsVar(Statement stmt, String var)
+	{
+		// TODO find a better way to do this
+		int ind = stmt.toString().indexOf(var + "=");
+		return ind == -1 ? false : true;
 	}
 	
 	public boolean visit(VariableDeclarationStatement node) 
