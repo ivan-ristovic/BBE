@@ -143,6 +143,12 @@ public class DestASTVisitor extends ASTVisitor
 	{
 		Logger.logInfo("Comparing statements: src: " + src + ",  dest: " + dest);
 		
+		// Has to be blockVars, because expectedVars throws nullPointer exception, don't have updates
+		// We didn't make it with constructor that initializes updates
+		BlockVariableMap map = this.blockVars.get(1);
+		
+		map.checkDeclarationStatements((VariableDeclarationStatement)src, (VariableDeclarationStatement)dest);
+		
 		return false;
 	}
 	
