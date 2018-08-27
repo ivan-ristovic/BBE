@@ -2,6 +2,9 @@ package bbe;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Expression;
@@ -10,6 +13,7 @@ import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
 import com.github.gumtreediff.utils.Pair;
 import org.eclipse.jdt.core.dom.Block;
@@ -19,7 +23,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Pair<String, String>> updates;
 	private Block currentBlock = null;
-	
+
 	public BlockVariableMap()
 	{
 		super();
@@ -45,8 +49,21 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	public Pair<String, String> getRenamePair(String variable1)
 	{
 		for (Pair<String, String> pair : updates)
-			if (pair.first.equals(variable1))
+			if (pair.first.equals(variable1)) {		
 				return pair;
+			}
+	
+		return null;
+	}
+	
+	public String getPair(String variable)
+	{
+		for (Pair<String, String> pair : updates)
+			if (pair.first.equals(variable))		
+				return pair.second;
+			else if (pair.second.equals(variable))
+				return pair.first;
+		
 		return null;
 	}
 	
@@ -66,10 +83,9 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			replacement = variablePair.second;
 			return false;
 		}
-		
+	
 		return true;
 	}
-	
 	public boolean checkNumbers(Expression expr1, Expression expr2)
 	{
 		// If numbers are different error
@@ -82,8 +98,16 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	
 	public boolean checkVariableAndNumber(String variable, Expression expr)
 	{
+//		Iterator<Entry<String, Integer>> it = this.entrySet().iterator();
+//	    while (it.hasNext()) {
+//	    	Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
+//	        System.err.println("Pair: " + pair.getKey() + " " + pair.getValue());
+//	    }
+	    
+	    int value = this.containsKey(variable) ? this.get(variable) : this.get(getPair(variable));
+	    
 		// If variable has different value than number
-		if (Integer.parseInt(expr.toString()) != this.get(variable))
+		if (Integer.parseInt(expr.toString()) != value)
 			return false;
 		
 		return true;
@@ -100,14 +124,14 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		if (left.getNodeType() == Type.NUMBER_LITERAL)
 			valueLeft = Integer.parseInt(left.toString());
 		else if (left.getNodeType() == Type.SIMPLE_NAME)
-			valueLeft = this.get(left.toString());
+			valueLeft = this.containsKey(left.toString()) ? this.get(left.toString()) : this.get(getPair(left.toString()));
 		else if (left.getNodeType() == Type.INFIX_EXPRESSION)
 			valueLeft = getInfixExpressionValue((InfixExpression)left);
 		
 		if (right.getNodeType() == Type.NUMBER_LITERAL)
 			valueRight = Integer.parseInt(right.toString());
 		else if (right.getNodeType() == Type.SIMPLE_NAME)
-			valueRight = this.get(right.toString());
+			valueRight = this.containsKey(right.toString()) ? this.get(right.toString()) : this.get(getPair(right.toString()));
 		else if (right.getNodeType() == Type.INFIX_EXPRESSION)
 			valueRight = getInfixExpressionValue((InfixExpression)right);
 		
@@ -143,8 +167,10 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		Expression right = expression.getRightOperand();
 		String operator = expression.getOperator().toString();
 		
-		int valueLeft = left.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(left.toString()) : this.get(left.toString());
-		int valueRight = right.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(right.toString()) : this.get(right.toString());
+		int valueLeft = left.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(left.toString()) : 
+			(this.containsKey(left.toString()) ? this.get(left.toString()) : this.get(getPair(left.toString())));
+		int valueRight = right.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(right.toString()) : 
+			(this.containsKey(right.toString()) ? this.get(right.toString()) : this.get(getPair(right.toString())));
 		
 		int value = 0;
 		
@@ -173,7 +199,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	{
 		int value = getInfixExpressionValue(expression);
 	
-		if (value != this.get(variable)) {
+		if (value != (this.containsKey(variable) ? this.get(variable) : this.get(getPair(variable)))) {
 			return false;
 		}
 		
@@ -519,7 +545,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 				}
 				else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
 					if (!checkInfixAndVariable((InfixExpression)initializer1, initializer2.toString())) {
-						System.out.println(initializer2 + " should be replaced with " + replacement);
+						System.out.println(initializer2 + " should be replaced with " + initializer1);
 						failure = true;
 					}
 				}
@@ -558,7 +584,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		if (rightSide.getNodeType() == Type.NUMBER_LITERAL)
 			initializer = Integer.parseInt(rightSide.toString());
 		else if (rightSide.getNodeType() == Type.SIMPLE_NAME) 
-			initializer = this.get(rightSide);
+			initializer = this.containsKey(rightSide) ? this.get(rightSide) : this.get(getPair(rightSide.toString()));
 
 		if (expression instanceof PrefixExpression) {
 			prefixPostfixOperator = ((PrefixExpression)expression).getOperator().toString();
