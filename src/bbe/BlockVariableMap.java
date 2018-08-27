@@ -417,10 +417,44 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		return !failure;
 	}
 
+	public boolean checkDeclarationStatements(VariableDeclarationStatement declaration1, VariableDeclarationStatement declaration2)
+	{
+		List<VariableDeclarationFragment> fragments1 = declaration1.fragments();
+		List<VariableDeclarationFragment> fragments2 = declaration2.fragments();
+		
+		int len1 = fragments1.size();
+		int len2 = fragments2.size();
+		
+		int len = len1 <= len2 ? len1 : len2;
+		
+		boolean failure = false;
+		
+		for (int i = 0; i < len; i++) {
+			if (!failure)
+				failure = checkDeclarations(fragments1.get(i), fragments2.get(i));
+			else
+				checkDeclarations(fragments1.get(i), fragments2.get(i));
+		}
+		
+		// If we want to cover those cases
+		if (len1 > len2) {
+			for (int i = len2; i < len1; i++) {
+				System.out.println("Declaration of variable " + fragments1.get(i) + " should be added");
+			}
+		}
+		else if (len2 > len1) {
+			for (int i = len1; i < len2; i++) {
+				System.out.println("Declaration of variable " + fragments2.get(i) + " is extra");
+			}
+		}
+		
+		return !failure;
+	}
+	
 	public boolean checkDeclarations(VariableDeclarationFragment declaration1, VariableDeclarationFragment declaration2)
 	{
 		Expression initializer1 = declaration1.getInitializer();
-		Expression initializer2 = declaration1.getInitializer();
+		Expression initializer2 = declaration2.getInitializer();
 		
 		String replacement = "";
 		
