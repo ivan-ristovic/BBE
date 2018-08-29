@@ -160,6 +160,18 @@ public class DestASTVisitor extends ASTVisitor
 			if (expressionStatementSrc.getNodeType() == Type.ASSIGNMENT && expressionStatementDest.getNodeType() == Type.ASSIGNMENT) {
 				map.checkAssignments((Assignment) e1, (Assignment)e2);
 			}
+			else if (expressionStatementSrc.getNodeType() == Type.ASSIGNMENT && expressionStatementDest.getNodeType() == Type.PREFIX_EXPRESSION) {
+				map.checkAssignmentAndPrefixPostfix((Assignment) e1, (PrefixExpression)e2, "assignment");
+			}
+			else if (expressionStatementSrc.getNodeType() == Type.ASSIGNMENT && expressionStatementDest.getNodeType() == Type.POSTFIX_EXPRESSION) {
+				map.checkAssignmentAndPrefixPostfix((Assignment) e1, (PostfixExpression)e2, "assignment");
+			}
+			else if (expressionStatementSrc.getNodeType() == Type.PREFIX_EXPRESSION && expressionStatementDest.getNodeType() == Type.ASSIGNMENT) {
+				map.checkAssignmentAndPrefixPostfix((Assignment) e2, (PrefixExpression)e1, "expression");
+			}
+			else if (expressionStatementSrc.getNodeType() == Type.POSTFIX_EXPRESSION && expressionStatementDest.getNodeType() == Type.ASSIGNMENT) {
+				map.checkAssignmentAndPrefixPostfix((Assignment) e2, (PostfixExpression)e1, "expression");
+			}
 		}
 		
 		return false;
