@@ -147,7 +147,20 @@ public class DestASTVisitor extends ASTVisitor
 		// We didn't make it with constructor that initializes updates
 		BlockVariableMap map = this.blockVars.get(1);
 		
-		map.checkDeclarationStatements((VariableDeclarationStatement)src, (VariableDeclarationStatement)dest);
+		if (src.getNodeType() == Type.VARIABLE_DECLARATION_STATEMENT)
+			map.checkDeclarationStatements((VariableDeclarationStatement)src, (VariableDeclarationStatement)dest);
+		// This is the only way I found to make assignment from a statement
+		else if (src.getNodeType() == Type.EXPRESSION_STATEMENT) {
+			ExpressionStatement expressionStatementSrc = (ExpressionStatement)src;
+			ExpressionStatement expressionStatementDest = (ExpressionStatement)dest;
+			
+			Expression e1 = expressionStatementSrc.getExpression();
+			Expression e2 = expressionStatementDest.getExpression();
+			
+			if (expressionStatementSrc.getNodeType() == Type.ASSIGNMENT && expressionStatementDest.getNodeType() == Type.ASSIGNMENT) {
+				map.checkAssignments((Assignment) e1, (Assignment)e2);
+			}
+		}
 		
 		return false;
 	}
