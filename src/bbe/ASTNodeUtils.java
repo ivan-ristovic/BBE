@@ -10,23 +10,23 @@ public class ASTNodeUtils
 	public static final int ROOT_BLOCK_ID = 1 << 30;
 	private static HashMap<Integer, Integer> _counters = new HashMap<>();
 	
-	public static int getBlockId(ASTNode node)
-	{
-		return getBlockId(node, false);
-	}
 	
-	public static int getBlockId(ASTNode node, boolean add)
+	public static int getBlockId(ASTNode node)
 	{
 		int depth = getBlockDepth(node);
 		int order = _counters.get(depth) != null ? _counters.get(depth) : 0;
 		
-		if (add && node instanceof Block) {
-			Logger.logInfo("incrementing block counter on depth: " + depth + " | new value: " + (order + 1));
-			_counters.put(depth, order + 1);
-		}
-		
 		Logger.logInfo("returning block id: " + (ROOT_BLOCK_ID >>> depth + order));
 		return ROOT_BLOCK_ID >>> depth + order;
+	}
+	
+	public static void incrementBlockCount(Block node) 
+	{
+		int depth = getBlockDepth(node);
+		int order = _counters.get(depth) != null ? _counters.get(depth) : 0;
+		
+		Logger.logInfo("incrementing block counter on depth: " + depth + " | new value: " + (order + 1));
+		_counters.put(depth, order + 1);
 	}
 	
 	public static int getBlockDepth(ASTNode node)

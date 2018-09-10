@@ -31,7 +31,9 @@ public class SrcASTVisitor extends ASTVisitor
 
 	public boolean visit(Block node) 
 	{
-		int id = ASTNodeUtils.getBlockId(node, true);
+		Logger.logInfo("Entering Block");
+		
+		int id = ASTNodeUtils.getBlockId(node);
 		int parId = ASTNodeUtils.getBlockId(node.getParent());
 		Logger.logInfo("adding block id to map: " + id + " (parent: " + parId + ")");
 		this.blockVars.put(id, new BlockVariableMap(this.blockVars.get(parId), null, node));
@@ -40,6 +42,8 @@ public class SrcASTVisitor extends ASTVisitor
 
 	public void endVisit(Block node) 
 	{	
+		Logger.logInfo("Exiting Block");
+		
 		int id = ASTNodeUtils.getBlockId(node);
 		int parId = ASTNodeUtils.getBlockId(node.getParent());
 		Logger.logInfo("ending visit of block id: " + id);
@@ -48,10 +52,14 @@ public class SrcASTVisitor extends ASTVisitor
 	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
 	        this.blockVars.get(parId).computeIfPresent(pair.getKey(), (k, v) -> pair.getValue());
 	    }
+	    
+	    ASTNodeUtils.incrementBlockCount(node);
 	}
 	
 	public boolean visit(VariableDeclarationStatement node) 
 	{
+		Logger.logInfo("Entering VariableDeclarationStatement");
+		
 		Type type = node.getType();
 		for (Modifier modifier : (List<Modifier>)node.modifiers()) {
 			// TODO check modifiers for each variable if they match in both files
@@ -62,6 +70,8 @@ public class SrcASTVisitor extends ASTVisitor
 	
 	public boolean visit(VariableDeclarationFragment node) 
 	{
+		Logger.logInfo("Entering VariableDeclarationFragment: " + node.getName());
+		
 		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		SimpleName name = node.getName();
 		Expression expr = node.getInitializer();
@@ -81,7 +91,7 @@ public class SrcASTVisitor extends ASTVisitor
 			// If right side is simple name ex. x = y
 			else if (expr.getNodeType() == Type.SIMPLE_NAME) {
 				// If it is variable and we have it in map
-				Logger.logInfo("fetching block id: " + blockHashCode);
+				Logger.logInfo("lookup for block id: " + blockHashCode);
 				if (this.blockVars.get(blockHashCode).containsKey(expr + ""))
 					value = this.blockVars.get(blockHashCode).get(expr + "");
 				else 
@@ -97,6 +107,8 @@ public class SrcASTVisitor extends ASTVisitor
 
 	public boolean visit(Assignment node) 
 	{
+		Logger.logInfo("Entering Assignment");
+		
 		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getLeftHandSide() + "";
 		String operator = node.getOperator() + "";
@@ -201,6 +213,8 @@ public class SrcASTVisitor extends ASTVisitor
 	
 	public boolean visit(ReturnStatement node)
 	{
+		Logger.logInfo("Entering ReturnStatement");
+		
 		int value = 0;
 		
 		Expression expr = node.getExpression();
