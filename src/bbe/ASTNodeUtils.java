@@ -14,7 +14,7 @@ public class ASTNodeUtils
 	public static int getBlockId(ASTNode node)
 	{
 		int depth = getBlockDepth(node);
-		int order = _counters.get(depth) != null ? _counters.get(depth) : 0;
+		int order = _counters.get(depth) != null ? _counters.get(depth) : 0;	// _counters.get(depth) ?? 0  :<
 		
 		return ROOT_BLOCK_ID >>> depth + order;
 	}
