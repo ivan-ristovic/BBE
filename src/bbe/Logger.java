@@ -41,7 +41,7 @@ public class Logger
 	private static void log(String messageType, String message)
 	{
 		String fullMessage = LocalDateTime.now().toLocalTime() + " " + messageType +  " " + message;
-	    System.out.println(fullMessage);
+	    System.err.println(fullMessage);
 	    if (pathToFile != null) {
 	    	try {
 	    		if (writer == null)

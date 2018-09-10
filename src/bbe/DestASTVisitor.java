@@ -26,9 +26,10 @@ public class DestASTVisitor extends ASTVisitor
 	public DestASTVisitor(HashMap<Integer, BlockVariableMap> expectedVars, ArrayList<Pair<String, String>> renames)
 	{
 		this.blockVars = new HashMap<Integer, BlockVariableMap>();
-		this.blockVars.put(0, new BlockVariableMap(renames));
+		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap(renames));
 		this.expectedVars = expectedVars;
 		this.updates = renames;
+		ASTNodeUtils.resetCounters();
 		/*Iterator<Entry<Integer, BlockVariableMap>> it = this.expectedVars.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
@@ -44,7 +45,7 @@ public class DestASTVisitor extends ASTVisitor
 
 	public boolean visit(Block node)
 	{
-		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
+		int parentDepth = ASTNodeUtils.getBlockId(node.getParent());
 		if (fatalError && !this.expectedVars.containsKey(parentDepth)) {
 			errorMessage = "block missmatch (" + parentDepth + ")";
 			return false;
@@ -55,7 +56,7 @@ public class DestASTVisitor extends ASTVisitor
 
 	public void endVisit(Block node) 
 	{	
-		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
+		int parentDepth = ASTNodeUtils.getBlockId(node.getParent());
 		int currentDepth = parentDepth + 1;
 		Iterator<Entry<String, Integer>> it = this.blockVars.get(currentDepth).entrySet().iterator();
 	    while (it.hasNext()) {
@@ -100,7 +101,7 @@ public class DestASTVisitor extends ASTVisitor
 	
 	private boolean compareBlocks(Block src, Block dest, ArrayList<String> conflictingVars) 
 	{
-		int id = ASTNodeUtils.getBlockDepth(src);
+		int id = ASTNodeUtils.getBlockId(src);
 		Logger.logInfo("Comparing blocks with id (" + id + ") with conflicting vars (" + conflictingVars + ")");
 
 	    List<Statement> srcStatements = src.statements();
@@ -196,7 +197,7 @@ public class DestASTVisitor extends ASTVisitor
 	
 	public boolean visit(VariableDeclarationFragment node) 
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		SimpleName name = node.getName();
 		Expression expr = node.getInitializer();
 		
@@ -229,7 +230,7 @@ public class DestASTVisitor extends ASTVisitor
 
 	public boolean visit(Assignment node) 
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getLeftHandSide() + "";
 		String operator = node.getOperator() + "";
 		int value;
@@ -266,7 +267,7 @@ public class DestASTVisitor extends ASTVisitor
 	// Prefix expressions ex. ++x
 	public boolean visit(PrefixExpression node)
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
 		int valueOfVar = 0;
@@ -286,7 +287,7 @@ public class DestASTVisitor extends ASTVisitor
 	// Postfix expressions ex. x++
 	public boolean visit(PostfixExpression node)
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
 		int valueOfVar = 0;
@@ -306,7 +307,7 @@ public class DestASTVisitor extends ASTVisitor
 	// Infix expressions ex. x + y
 	public int visitInfix(InfixExpression node)
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String leftIdentifier = node.getLeftOperand() + "";
 		String rightIdentifier = node.getRightOperand() + "";
 		int leftSideValue = this.blockVars.get(blockHashCode).get(leftIdentifier) != null ? this.blockVars.get(blockHashCode).get(leftIdentifier) : Integer.parseInt(leftIdentifier);
@@ -343,7 +344,7 @@ public class DestASTVisitor extends ASTVisitor
 		else if (expr.getNodeType() == Type.INFIX_EXPRESSION)
 			value = visitInfix((InfixExpression)expr);
 		else if (expr.getNodeType() == Type.SIMPLE_NAME)
-			value = this.blockVars.get(ASTNodeUtils.getBlockDepth(node)).get(expr + "");
+			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).get(expr + "");
 		
 		return true;
 	}	
