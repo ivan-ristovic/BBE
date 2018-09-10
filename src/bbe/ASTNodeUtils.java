@@ -16,7 +16,6 @@ public class ASTNodeUtils
 		int depth = getBlockDepth(node);
 		int order = _counters.get(depth) != null ? _counters.get(depth) : 0;
 		
-		Logger.logInfo("returning block id: " + (ROOT_BLOCK_ID >>> depth + order));
 		return ROOT_BLOCK_ID >>> depth + order;
 	}
 	
@@ -25,7 +24,7 @@ public class ASTNodeUtils
 		int depth = getBlockDepth(node);
 		int order = _counters.get(depth) != null ? _counters.get(depth) : 0;
 		
-		Logger.logInfo("incrementing block counter on depth: " + depth + " | new value: " + (order + 1));
+		Logger.logInfo("Incrementing block counter on depth: " + depth + " | new value: " + (order + 1));
 		_counters.put(depth, order + 1);
 	}
 	

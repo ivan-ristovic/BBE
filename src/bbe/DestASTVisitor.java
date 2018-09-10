@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.antlr.grammar.v3.ANTLRParser.label_return;
 import org.eclipse.jdt.core.dom.*;
 
 import com.github.gumtreediff.utils.Pair;
@@ -45,32 +44,42 @@ public class DestASTVisitor extends ASTVisitor
 
 	public boolean visit(Block node)
 	{
-		int parentDepth = ASTNodeUtils.getBlockId(node.getParent());
-		if (fatalError && !this.expectedVars.containsKey(parentDepth)) {
-			errorMessage = "block missmatch (" + parentDepth + ")";
+		Logger.logInfo("Entering Block");
+
+		int id = ASTNodeUtils.getBlockId(node);
+		int parId = ASTNodeUtils.getBlockId(node.getParent());
+		
+		if (fatalError && !this.expectedVars.containsKey(parId)) {
+			errorMessage = "block missmatch (" + parId + ")";
 			return false;
 		}
-		this.blockVars.put(parentDepth + 1, new BlockVariableMap(this.blockVars.get(parentDepth), updates, node));
+		
+		Logger.logInfo("Adding block to map: " + id + " (parent: " + parId + ")");
+		this.blockVars.put(id, new BlockVariableMap(this.blockVars.get(parId), updates, node));
+		
 		return true;
 	}
 
 	public void endVisit(Block node) 
 	{	
-		int parentDepth = ASTNodeUtils.getBlockId(node.getParent());
-		int currentDepth = parentDepth + 1;
-		Iterator<Entry<String, Integer>> it = this.blockVars.get(currentDepth).entrySet().iterator();
+		int id = ASTNodeUtils.getBlockId(node);
+		int parId = ASTNodeUtils.getBlockId(node.getParent());
+		
+		Logger.logInfo("Exiting Block: " + id);
+		
+		Iterator<Entry<String, Integer>> it = this.blockVars.get(id).entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
-	        this.blockVars.get(parentDepth).computeIfPresent(pair.getKey(), (k, v) -> pair.getValue());
+	        this.blockVars.get(parId).computeIfPresent(pair.getKey(), (k, v) -> pair.getValue());
 	    }
 	    
 	    ArrayList<String> conflictingVars = new ArrayList<String>();
 	    boolean hasBlockConflicts = false;
-	    it = this.expectedVars.get(currentDepth).entrySet().iterator();
+	    it = this.expectedVars.get(id).entrySet().iterator();
 	    while (it.hasNext()) {		    
 	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
 	    	String srcName = pair.getKey();
-	    	Pair<String, String> rename = this.blockVars.get(currentDepth).getRenamePair(srcName);
+	    	Pair<String, String> rename = this.blockVars.get(id).getRenamePair(srcName);
 	    	// If the name is not in the map, this indicates that it is the same in src and in dest.
 	    	String destName = rename != null ? rename.second : srcName;
 	    	if (destName == MappingFactory.MISSING) {
@@ -80,8 +89,8 @@ public class DestASTVisitor extends ASTVisitor
 				//hasBlockConflicts = true;
 	    	}
 	    	else {		    	
-				int srcValue = this.expectedVars.get(currentDepth).get(srcName);
-				int destValue = this.blockVars.get(currentDepth).get(destName);
+				int srcValue = this.expectedVars.get(id).get(srcName);
+				int destValue = this.blockVars.get(id).get(destName);
 				if (srcValue != destValue) {
 					Logger.logError("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
 					conflictingVars.add(srcName);
@@ -89,14 +98,17 @@ public class DestASTVisitor extends ASTVisitor
 				}
 	    	}
 	    }
-	    Logger.logInfo("Block (" + currentDepth + ") traversed with conflicts: " + hasBlockConflicts);
+	    
+	    Logger.logInfo("Block (" + id + ") traversed with conflicts: " + hasBlockConflicts);
 	    if (hasBlockConflicts)
 	    {
 	    	Logger.logInfo("Conflicting vars: " + conflictingVars.toString());
-	    	Logger.logInfo("Deep diving into into block (" + currentDepth + ")");
-		    Block sourceBlock = this.expectedVars.get(currentDepth).getCurrentBlock();
+	    	Logger.logInfo("Deep diving into into block (" + id + ")");
+		    Block sourceBlock = this.expectedVars.get(id).getCurrentBlock();
 		    compareBlocks(sourceBlock, node, conflictingVars);
 	    }
+
+	    ASTNodeUtils.incrementBlockCount(node);
 	}
 	
 	private boolean compareBlocks(Block src, Block dest, ArrayList<String> conflictingVars) 
@@ -146,7 +158,7 @@ public class DestASTVisitor extends ASTVisitor
 		
 		// Has to be blockVars, because expectedVars throws nullPointer exception, don't have updates
 		// We didn't make it with constructor that initializes updates
-		BlockVariableMap map = this.blockVars.get(1);
+		BlockVariableMap map = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID);
 		
 		if (src.getNodeType() == Type.VARIABLE_DECLARATION_STATEMENT)
 			map.checkDeclarationStatements((VariableDeclarationStatement)src, (VariableDeclarationStatement)dest);
@@ -187,6 +199,8 @@ public class DestASTVisitor extends ASTVisitor
 	
 	public boolean visit(VariableDeclarationStatement node) 
 	{
+		Logger.logInfo("Entering VariableDeclarationStatement");
+		
 		Type type = node.getType();
 		for (Modifier modifier : (List<Modifier>)node.modifiers()) {
 			// TODO check modifiers for each variable if they match in both files
@@ -197,6 +211,8 @@ public class DestASTVisitor extends ASTVisitor
 	
 	public boolean visit(VariableDeclarationFragment node) 
 	{
+		Logger.logInfo("Entering VariableDeclarationFragment: " + node.getName());
+		
 		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		SimpleName name = node.getName();
 		Expression expr = node.getInitializer();
@@ -230,6 +246,8 @@ public class DestASTVisitor extends ASTVisitor
 
 	public boolean visit(Assignment node) 
 	{
+		Logger.logInfo("Entering Assignment");
+		
 		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getLeftHandSide() + "";
 		String operator = node.getOperator() + "";
@@ -267,6 +285,8 @@ public class DestASTVisitor extends ASTVisitor
 	// Prefix expressions ex. ++x
 	public boolean visit(PrefixExpression node)
 	{
+		Logger.logInfo("Entering PrefixExpression");
+		
 		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
@@ -287,6 +307,8 @@ public class DestASTVisitor extends ASTVisitor
 	// Postfix expressions ex. x++
 	public boolean visit(PostfixExpression node)
 	{
+		Logger.logInfo("Entering PostfixExpression");
+		
 		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
@@ -307,6 +329,8 @@ public class DestASTVisitor extends ASTVisitor
 	// Infix expressions ex. x + y
 	public int visitInfix(InfixExpression node)
 	{
+		Logger.logInfo("Entering InfixExpression");
+		
 		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String leftIdentifier = node.getLeftOperand() + "";
 		String rightIdentifier = node.getRightOperand() + "";
@@ -334,6 +358,8 @@ public class DestASTVisitor extends ASTVisitor
 	
 	public boolean visit(ReturnStatement node)
 	{
+		Logger.logInfo("Entering ReturnStatement");
+		
 		int value = 0;
 		
 		Expression expr = node.getExpression();

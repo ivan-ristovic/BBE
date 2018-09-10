@@ -12,7 +12,7 @@ public class Program
 	// TODO remove hardcoded paths everywhere and allow args
 	public static void main(String[] args) 
 	{
-		//Logger.pathToFile = "log.txt";
+		// Logger.pathToFile = "log.txt";
 
 		String sourceFile = null;
 		String destFile = null;
@@ -35,12 +35,11 @@ public class Program
 			Logger.logErrorAndExit("failed to create mapping");
 		}
 		
-		/* FIXME
+		/* FIXME */
 		if (mf.hasOnlyUpdateActions()) {
 			Logger.logInfo("The two given sources are semantically equivallent.");
 			System.exit(0);
 		}
-		*/
 				
 		// if they are, proceed with the JDT API AST traversal using our custom traverser
 		
@@ -51,8 +50,10 @@ public class Program
 			Logger.logErrorAndExit("Failed to load the source files");
 		}
 
-		Logger.logInfo("Traversing source tree.");
+		Logger.logInfo("\n\n--- Traversing source tree... ---");
 		HashMap<Integer, BlockVariableMap> vars = traverser.traverseSrcTree();
+		
+		// TODO remove or beautify if we wish to show end results
 		Iterator it = vars.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pair = (Map.Entry)it.next();
@@ -64,9 +65,10 @@ public class Program
 	        }
 	    }
 
-		// Logger.logInfo("Traversing dest tree.");
-		// traverser.traverseDestTree(vars);
+		Logger.logInfo("\n\n---- Traversing dest tree... ---");
+		traverser.traverseDestTree(vars);		
 		
+		Logger.logInfo("\n\n---- Done! ---");
 		
 		Logger.closeWriter();
 	}
