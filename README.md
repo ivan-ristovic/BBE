@@ -2,24 +2,24 @@
 
 A team project for the Software Verification course.
 
-The task is to fix bugs in a given code snippet by giving a syntaxically simalar working code example.
+The task is to fix bugs in a given code snippet by giving a syntaxically simalar working code example. For now we provide only Java code analyzer due to usage of the JDT Core DOM API.
 
 Developed by:
 - Ivan Ristović
 - Milana Kovačević
 - Strahinja Stanojević
 
-Using [GumTree API](https://github.com/GumTreeDiff/gumtree)
+Using [GumTree API](https://github.com/GumTreeDiff/gumtree) and [JDT Core DOM API](https://help.eclipse.org/neon/index.jsp?topic=%2Forg.eclipse.jdt.doc.isv%2Freference%2Fapi%2Forg%2Feclipse%2Fjdt%2Fcore%2Fdom%2FASTVisitor.html).
 
 
 ## Prerequisites
 
-- Java 8 or higher runtime
+- JRE 8 or higher
 
 
 ## Usage
 
-The paths of the files to compare are provided via command line arguments. We provide some basic examples [here](tests) which you can use.
+The paths of the files to compare are provided via command line arguments. We provide some basic examples which you can use - you can find them [here](tests).
 
 ```java bbe /path/to/proper/snippet /path/to/bugged/snippet```
 
