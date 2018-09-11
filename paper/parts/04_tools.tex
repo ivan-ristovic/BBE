@@ -7,3 +7,9 @@ We are using two external APIs in order to create/manipulate the code AST:
     \item GumTree \footnote{Interested reader can take a look at an excellent article \cite{DBLP:conf/kbse/FalleriMBMM14} about code differencing written by GumTree authors} API \cite{GumTree}
     \item Eclipse JDT Core API \cite{JDT}
 \end{itemize}
+
+We use GumTree to create and analyze the ASTs. Via GumTree API it is possible to find mappings between the two trees. Using those mappings we can detect similarities in the trees such as variable renames or whole matching subtrees.
+
+Although GumTree API gives us enormous possibilities, it does not give us alot of information regarding the specific nodes in the trees. In other words, we may know that the certain part of the code from the first tree has been removed in the second tree, but we can not know whether it means that the trees are equivallent or not (as shown in example \ref{exmp:DeleteExmp}).
+
+For more in-depth traversal of the AST we use the Eclipse JDT Core API (from now on referred to as \emph{JDT API}). Using the JDT API we can define actions which are executed during the visit of a certain node in the AST. More details on the traversal algorithm can be found in the following chapter.
