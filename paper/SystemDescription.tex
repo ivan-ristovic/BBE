@@ -1,0 +1,62 @@
+% !TEX encoding = UTF-8 Unicode
+
+\documentclass[a4paper]{article}
+
+\usepackage{color}
+\usepackage{url}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+
+\usepackage[english,serbian]{babel}
+
+\usepackage[unicode]{hyperref}
+\hypersetup{colorlinks,citecolor=green,filecolor=green,linkcolor=blue,urlcolor=blue}
+
+\usepackage{listings}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codeblue}{rgb}{0.0,0,0.82}
+\lstdefinestyle{mystyle}{
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codeblue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codegreen},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=4
+}
+\lstset{style=mystyle}
+
+\usepackage[font=scriptsize,labelfont=bf]{caption}
+
+
+\begin{document}
+
+\title{Ispravka gre\v{s}aka na osnovu primera\\ \small{Seminarski rad u okviru kursa\\Verifikacija softvera\\ Matematički fakultet}}
+
+\author{\href{mailto:mi14031@matf.bg.ac.rs}{Ivan Ristović}, \href{mailto:mi14042@matf.bg.ac.rs}{Milana Kovačević}, \href{mailto:mi14207@matf.bg.ac.rs}{Strahinja Stanojević}}
+\date{septembar 2018.}
+\maketitle
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\newpage
+
+\input{parts/01_intro.tex}
+\input{parts/02_foo.tex}
+\input{parts/03_foo.tex}
+
+\addcontentsline{toc}{section}{Literatura}
+\appendix
+\bibliography{references}
+\bibliographystyle{plain}
+
+
+\end{document}
