@@ -1,0 +1,116 @@
+\section{Problem formulation}
+\label{sec:Formulation}
+
+Instead of writing a long formulation of the problem at hand we will rather provide a series of examples which will serve as an illustration and hopefully give the reader enough to grasp the matter without formal definitions \footnote{Some of the definitions would include semantical equivallence of the two code snippets, which would most probably be hard to formulate and even then would probably be ambiguous.}. First, let's take a look at the following two code snippets:
+
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int foo1()
+{
+    int x = 1, a = 2;
+    return x + a;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int foo2()
+{
+    int x = 0, a = 2;
+    return x + a;
+}
+\end{lstlisting}
+\end{tabular}
+
+These two snippets are clearly semantically different, because the \texttt{foo2} function has different value of \texttt{x} variable than function \texttt{foo1}. If we wish to synthesize a fix for the given example, we would just replace the initializer for variable \texttt{x} in function \texttt{foo2}  from $0$ to $1$.
+
+We have seen a very simple example which has a simple solution. The problem, however, gets much more complex as new code structures emerge, such as branching and loops. Also, reader might have noticed that semantical equivallence has nothing to do with syntactic equivallence. Suppose we are given two code snippets, as before:
+
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int fooEq1()
+{
+    int x = 1;
+    int a = 2;
+    return x + a + 1;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int fooEq2()
+{
+    return 4;
+}
+\end{lstlisting}
+\end{tabular}
+
+In this example the syntactic difference is enormous, seeing as that the second function has no variables declared and has a single statement, whereas the first one has variables defined and has three statements. Both functions, however, evaluate to the same result: $4$. One might think that in most cases comparing the return values should be enough, however the following example proves otherwise:
+
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int fooSideEff()
+{
+    System.out.println("Hello!");
+    return 1;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int foo()
+{
+    return 1;
+}
+\end{lstlisting}
+\end{tabular}
+
+Side effects like these have an enormous impact on the difficulty of the problem at hand. There is no way to determine for any external function whether it has a side effect or not since we do not have access to it's source code. Therefore, side effects (as well as some other constructs) have been excluded from the analysis - we will specify in the following chapters exactly what code constructs have been excluded or what pre-assumptions were made about the given code snippets.
+
+Let's take a look at another example of equivallent code snippets:
+
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int anotherFooEq1()
+{
+    int x = 0;
+    x += 3;
+    return x;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int anotherFooEq2()
+{
+    int a = 0;
+    a++;
+    a++;
+    ++a;
+    return a;
+}
+\end{lstlisting}
+\end{tabular}
+
+Examples like these though, can be checked and verified to be equivallent even though there are side effects present in the function \texttt{anotherFooEq2}.
+
+We should note that, in general, there is no way of telling whether the execution will reach certain branches of the code due to the lack of determinism if we are to include the user input into the problem:
+
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int ambFoo1(int x)
+{
+    if (x >= 0)
+        return 1;
+    else
+        return 0;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int ambFoo2(int y)
+{
+    return y % 2;
+}
+\end{lstlisting}
+\end{tabular}
+
+These functions are definitely semantically different, but the fact that they might produce the same result for different inputs creates an additional problem. Therefore, we have assumed complete determinism - in other words all variables have to be initialized before their use.
+
+In the following chapters we will extend the example set with more complicated examples and describe our approach of semantical testing.

@@ -10,28 +10,41 @@
 \usepackage[english]{babel}
 
 \usepackage[unicode]{hyperref}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
 \hypersetup{colorlinks,citecolor=green,filecolor=green,linkcolor=blue,urlcolor=blue}
-
+\usepackage[title]{appendix}
+\usepackage{float}
+\usepackage[graphicx]{realboxes}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{chngcntr}
+\counterwithin{figure}{section}
 \usepackage{listings}
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codeblue}{rgb}{0.0,0,0.82}
-\lstdefinestyle{mystyle}{
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{codeblue},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codegreen},
-    basicstyle=\footnotesize,
-    breakatwhitespace=false,
-    breaklines=true,
-    captionpos=b,
-    keepspaces=true,
-    showspaces=false,
+\usepackage{textcomp}
+\usepackage{xcolor}
+\lstset {
+    language=Java,
+    frame=none,
+    %xleftmargin=-.25in,
+    %xrightmargin=.25in
+    framesep=10pt,
+    tabsize=4,
     showstringspaces=false,
-    showtabs=false,
-    tabsize=4
+    upquote=true,
+    commentstyle=\color{commentgreen},
+    keywordstyle=\color{orange},
+    stringstyle=\color{red},
+    basicstyle=\small\ttfamily,
+    emph={int,char,double,float,unsigned,void,bool},
+    emphstyle={\color{blue}},
+    escapechar=\&,
+    classoffset=1,
+    morekeywords={>,<,.,;,,,-,!,=,~},
+    keywordstyle=\color{weborange},
+    classoffset=0,
+    breaklines=true
 }
-\lstset{style=mystyle}
 
 \usepackage[font=scriptsize,labelfont=bf]{caption}
 
@@ -42,6 +55,7 @@
 
 \author{\href{mailto:mi14031@matf.bg.ac.rs}{Ivan Ristović}, \href{mailto:mi14042@matf.bg.ac.rs}{Milana Kovačević}, \href{mailto:mi14207@matf.bg.ac.rs}{Strahinja Stanojević}}
 \date{September 2018.}
+
 \maketitle
 
 \setcounter{tocdepth}{1}
@@ -51,14 +65,16 @@
 \tableofcontents
 \newpage
 
-\input{parts/01_intro}
+\input{parts/01_formulation}
 \input{parts/02_foo}
 \input{parts/03_foo}
 
-\addcontentsline{toc}{section}{Referebces}
-\appendix
+\addcontentsline{toc}{section}{References}
 \bibliography{references}
 \bibliographystyle{plain}
 
+%\begin{appendices}
+%\input{parts/???}
+%\end{appendices}
 
 \end{document}
