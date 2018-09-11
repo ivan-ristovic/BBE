@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.github.gumtreediff.utils.Pair;
-
 public class Program 
 {	
 	// TODO remove hardcoded paths everywhere and allow args
