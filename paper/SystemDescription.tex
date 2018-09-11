@@ -46,6 +46,14 @@
     breaklines=true
 }
 
+\theoremstyle{plain}
+\newtheorem{thm}{Teorema}[section]
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{exmp}[thm]{Example}
+\newtheorem{assn}[thm]{Assumption}
+\newtheorem{obsn}[thm]{Observation}
+
 \usepackage[font=scriptsize,labelfont=bf]{caption}
 
 
@@ -67,7 +75,9 @@
 
 \input{parts/01_formulation}
 \input{parts/02_assumptions}
-\input{parts/03_foo}
+\input{parts/03_ast}
+\input{parts/04_tools}
+\input{parts/05_algorithm}
 
 \addcontentsline{toc}{section}{References}
 \bibliography{references}
