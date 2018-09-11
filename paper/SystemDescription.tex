@@ -7,7 +7,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 
-\usepackage[english,serbian]{babel}
+\usepackage[english]{babel}
 
 \usepackage[unicode]{hyperref}
 \hypersetup{colorlinks,citecolor=green,filecolor=green,linkcolor=blue,urlcolor=blue}
@@ -38,22 +38,24 @@
 
 \begin{document}
 
-\title{Ispravka gre\v{s}aka na osnovu primera\\ \small{Seminarski rad u okviru kursa\\Verifikacija softvera\\ Matematički fakultet}}
+\title{Bugfixing using valid examples\\ \small{Software Verification course team project\\Faculty of Mathematics, Belgrade}}
 
 \author{\href{mailto:mi14031@matf.bg.ac.rs}{Ivan Ristović}, \href{mailto:mi14042@matf.bg.ac.rs}{Milana Kovačević}, \href{mailto:mi14207@matf.bg.ac.rs}{Strahinja Stanojević}}
-\date{septembar 2018.}
+\date{September 2018.}
 \maketitle
 
 \setcounter{tocdepth}{1}
-\tableofcontents
 
+\input{parts/00_abstract}
+
+\tableofcontents
 \newpage
 
-\input{parts/01_intro.tex}
-\input{parts/02_foo.tex}
-\input{parts/03_foo.tex}
+\input{parts/01_intro}
+\input{parts/02_foo}
+\input{parts/03_foo}
 
-\addcontentsline{toc}{section}{Literatura}
+\addcontentsline{toc}{section}{Referebces}
 \appendix
 \bibliography{references}
 \bibliographystyle{plain}
