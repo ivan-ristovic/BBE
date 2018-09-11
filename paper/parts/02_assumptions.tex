@@ -1,0 +1,20 @@
+\section{Assumptions and limitations}
+\label{sec:AssumptionsAndLimitations}
+
+In the previous chapter we have shown how certain code structures (loops for example) can be hard to analyze. Therefore we have set a certain number of assumptions on the input code snippets:
+
+\begin{itemize}
+    \item All variables have to be initialized before their use
+    \item All functions are assumed not to have side effects
+    \item Branching condition value needs to be known at compile-time
+\end{itemize}
+
+Apart from these assumptions, we have ignored the following in order to make the problem easier:
+
+\begin{itemize}
+    \item All data types except int
+    \item All code constructs except declarations, assignments, branching statements and arithmetic operators
+\end{itemize}
+
+
+\cite{DBLP:conf/kbse/FalleriMBMM14}
