@@ -1,0 +1,10 @@
+\section{Conclusion and future work}
+\label{sec:Conclusion}
+
+We have created a tool which for a small subset of code snippets returns a list of actions nececary to make them equivallent. These, are however, the first steps in the process of building a broader comparer. We have set some assumptions and limitations, however some of them are not hard to remove. Specifically:
+\begin{itemize}
+    \item The usage of the \texttt{int} type can be easily extended to primitive types. If we wish to extend this to reference types, there has to exist a way of comparing the objects (which in user-implementation cases does not nececarily mean to compare their references). The \texttt{equalsTo()} method satisfies the requirements. Primitive types, therefore, have to be boxed to their container types (\texttt{int} to \texttt{Integer} etc.) in order to create a unambiguous way to compare the two objects.
+    \item Variable determinism can be retained through the use of the symbolic variables instead of the raw values. Reference types may still cause some problems, though.
+    \item Loops with a compile-time known iteration count can be processed as an array of sequential blocks, without changing the algorithm. Another approach can be to unwind loops to a certain limit and then compare them. However, there are cases where loops have different amount of iterations yet still produce the same result. Ofcourse, this is not the only problem that remains unsolved when it comes to loops.
+    \item Unsupported code constucts can be analyzed simply by implementing the action which will be executed on the visit of that particular node in the AST.
+\end{itemize}
