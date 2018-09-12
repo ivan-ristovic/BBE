@@ -21,7 +21,7 @@ Using [GumTree API](https://github.com/GumTreeDiff/gumtree) and [JDT Core DOM AP
 
 The paths of the files to compare are provided via command line arguments. We provide some basic examples which you can use - you can find them [here](tests).
 
-```java bbe /path/to/proper/snippet /path/to/bugged/snippet```
+```java -jar bbe.jar /path/to/proper/snippet /path/to/bugged/snippet```
 
 
 ## Importing the project to Eclipse
