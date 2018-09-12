@@ -1,2 +1,178 @@
 \section{The analysis algorithm}
 \label{sec:Algorithm}
+
+We start off by creating two ASTs, one for each code snipet. The first task is to use matchers to find matching tree nodes. Using the GumTree API, we compute the actions required to create the second tree from the first. If those actions contain only variable name updates, then it is safe to say that the trees are equivallent and that the snippets are semantically equivalelnt. If there are insert or delete actions present, one might be tempted to report them as a difference and automatically assume that the actions needed to be done are reverse of those found in order to ``fix'' the second code. As shown in example \ref{exmp:PlusPlusExample}, this is the wrong way of handling the problem at hand.
+
+The second approach is to phrase the semantical equivallence in a different way. This brings us to per-block variable analysis. We assume the following is true for any given code snippet:
+
+\bigskip
+\begin{assn}
+    Semantically equivallent code snippets have the same variable values at the end of each block.
+\end{assn}
+\bigskip
+
+To illustrate this, we give an example and explain how we collect and compare variable values for each block.
+
+\begin{exmp}
+\bigskip
+\textit{Consider the following code snippets:}
+
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int x = 1;
+int foo()
+{
+    int a = 5;
+
+    if (a > 3) {
+        x = 2;
+    }
+
+    int c = 1;
+
+    if (a > 3) {
+        c = 2;
+    }
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int y = 1;
+int foo2()
+{
+    int a = 2;
+
+    if (a < 3) {
+        y = 2;
+    }
+
+    int c = 1;
+
+    if (a < 3) {
+        c = 2;
+    }
+}
+\end{lstlisting}
+\end{tabular}
+
+\bigskip
+\textit{Let's analyze the first snippet ``per-block'':}
+\bigskip
+
+\begin{lstlisting}
+// Block depth 0, ordinal 1
+int x = 1;
+
+int foo()
+{
+    // Block depth 1, ordinal 1
+    // Vars passed: x = 1
+
+    int a = 5;
+
+    if (a > 3) {
+        // Block depth 2, ordinal 1
+        x = 2;
+        // End of block: Update x in parent blocks
+    }
+
+    // x = 1 here because of the update
+
+    int c = 1;
+    if (a > 3) {
+        // Block depth 2, ordinal 2
+        c = 2;
+        // End of block: Update c in parent blocks
+    }
+
+    // Vars: x = 2, a = 5, c = 2
+}
+
+// End of root block: x = 2
+\end{lstlisting}
+
+\bigskip
+\textit{Using the above information, we create the variable map:}
+\bigskip
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ | c | c | c |}
+    \hline
+    Block depth & Block ordinal & Variables \\
+    \hline
+    0 & 1 & x \\
+    1 & 1 & x, a, c \\
+    2 & 1 & x, a \\
+    2 & 2 & x, a, c \\
+    \hline
+\end{tabular}
+\end{table}
+
+\bigskip
+\textit{The variable values are stored per each block and each update in the child block will be propagated to the parent block when the end of the child block is reached. Using this variable map as a model, we do the same for the second code snippet. Also, note that renamed variables are not a problem - the matcher will give the update pairs before analysis, in this case (x, y) will be an update pair.}
+\bigskip
+
+\begin{lstlisting}
+// Block depth 0, ordinal 1
+int y = 1;  // Matches to x
+
+int foo()
+{
+    // Block depth 1, ordinal 1
+    // Vars passed: y = 1
+
+    int a = 2;
+
+    if (a < 3) {
+        // Block depth 2, ordinal 1
+        y = 2;
+        // End of block: Update y in parent blocks
+    }
+
+    // x = 1 here because of the update
+
+    int c = 1;
+    if (a < 3) {
+        // Block depth 2, ordinal 2
+        c = 2;
+        // End of block: Update c in parent blocks
+    }
+
+    // Vars: y = 2, a = 2, c = 2
+    // Conflict found: a = 1 in source, but found a = 2
+}
+
+// End of root block: y = 2
+\end{lstlisting}
+
+\bigskip
+\textit{The above algorithm does not take into account what actions are done in a block, as long as the end result of the block is the same - i.e. the variables have the same end-value.}
+\qed
+\end{exmp}
+
+The pseudo code of the algorithm can be seen in figure \ref{fig:WhileAST}. Returned conflicts can be used to either list or repare the code. For now we are just listing the conflicts.
+
+\begin{figure}[H]
+\centering
+\begin{lstlisting}
+Analyze(tree1: AST, tree2: AST)
+begin
+    if (CreateMatcher(tree1, tree2).OnlyUpdateActionsFound()):
+        /* We have found only rename actions */
+        print("Given snippets are equivallent")
+        return
+
+    /* In general case, traverse the first tree */
+    vmap = tree1.TraverseAndRecordVars()
+
+    /* Traverse the second tree and compare vars per block */
+    conflicts = tree2.TraverseAndCompareVars(vmap)
+
+    foreach (conflict in conflicts):
+        print(conflict.Details)
+end
+\end{lstlisting}
+\caption{Our analysis algorithm in pseudocode}
+\label{fig:WhileAST}
+\end{figure}
