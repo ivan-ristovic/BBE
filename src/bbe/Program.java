@@ -65,10 +65,10 @@ public class Program
 	        }
 	    }
 
-		Logger.logInfo("\n\n---- Traversing dest tree... ---");
+		Logger.logInfo("\n\n--- Traversing dest tree... ---");
 		traverser.traverseDestTree(vars);		
 		
-		Logger.logInfo("\n\n---- Done! ---");
+		Logger.logInfo("\n\n--- Done! ---");
 		
 		Logger.closeWriter();
 	}
