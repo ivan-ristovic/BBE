@@ -18,7 +18,8 @@ public class SrcASTVisitor extends ASTVisitor
 	public SrcASTVisitor()
 	{
 		this.blockVars = new HashMap<Integer, BlockVariableMap>();
-		this.blockVars.put(0, new BlockVariableMap());
+		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap());
+		ASTNodeUtils.resetCounters();
 	}
 	
 	
@@ -29,24 +30,39 @@ public class SrcASTVisitor extends ASTVisitor
 
 	public boolean visit(Block node) 
 	{
-		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
-		this.blockVars.put(parentDepth + 1, new BlockVariableMap(this.blockVars.get(parentDepth), null, node));
+		Logger.logInfo("Entering Block");
+		
+		int id = ASTNodeUtils.getBlockId(node);
+		int parId = ASTNodeUtils.getBlockId(node.getParent());
+		
+		Logger.logInfo("Adding block to map: " + id + " (parent: " + parId + ")");
+		this.blockVars.put(id, new BlockVariableMap(this.blockVars.get(parId), null, node));
+		
 		return true;
 	}
 
 	public void endVisit(Block node) 
 	{	
-		int parentDepth = ASTNodeUtils.getBlockDepth(node.getParent());
-		int currentDepth = parentDepth + 1;
-		Iterator<Entry<String, Integer>> it = this.blockVars.get(currentDepth).entrySet().iterator();
+		Logger.logInfo("Exiting Block");
+		
+		int id = ASTNodeUtils.getBlockId(node);
+		int parId = ASTNodeUtils.getBlockId(node.getParent());
+		
+		Logger.logInfo("Exiting Block: " + id);
+		
+		Iterator<Entry<String, Integer>> it = this.blockVars.get(id).entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
-	        this.blockVars.get(parentDepth).computeIfPresent(pair.getKey(), (k, v) -> pair.getValue());
+	        this.blockVars.get(parId).computeIfPresent(pair.getKey(), (k, v) -> pair.getValue());
 	    }
+	    
+	    ASTNodeUtils.incrementBlockCount(node);
 	}
 	
 	public boolean visit(VariableDeclarationStatement node) 
 	{
+		Logger.logInfo("Entering VariableDeclarationStatement");
+		
 		Type type = node.getType();
 		for (Modifier modifier : (List<Modifier>)node.modifiers()) {
 			// TODO check modifiers for each variable if they match in both files
@@ -57,7 +73,9 @@ public class SrcASTVisitor extends ASTVisitor
 	
 	public boolean visit(VariableDeclarationFragment node) 
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		Logger.logInfo("Entering VariableDeclarationFragment: " + node.getName());
+		
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		SimpleName name = node.getName();
 		Expression expr = node.getInitializer();
 		
@@ -82,7 +100,7 @@ public class SrcASTVisitor extends ASTVisitor
 					value = Integer.MAX_VALUE;
 			}
 		}
-		
+
 		this.blockVars.get(blockHashCode).put(new String(name + ""), value);
 
 		return false;
@@ -90,7 +108,9 @@ public class SrcASTVisitor extends ASTVisitor
 
 	public boolean visit(Assignment node) 
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		Logger.logInfo("Entering Assignment");
+		
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getLeftHandSide() + "";
 		String operator = node.getOperator() + "";
 		int value;
@@ -127,7 +147,9 @@ public class SrcASTVisitor extends ASTVisitor
 	// Prefix expressions ex. ++x
 	public boolean visit(PrefixExpression node)
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		Logger.logInfo("Entering PrefixExpression");
+		
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
 		int valueOfVar = 0;
@@ -147,7 +169,9 @@ public class SrcASTVisitor extends ASTVisitor
 	// Postfix expressions ex. x++
 	public boolean visit(PostfixExpression node)
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		Logger.logInfo("Entering PostfixExpression");
+		
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String identifier = node.getOperand() + "";
 		String operator = node.getOperator() + "";
 		int valueOfVar = 0;
@@ -167,7 +191,9 @@ public class SrcASTVisitor extends ASTVisitor
 	// Infix expressions ex. x + y
 	public int visitInfix(InfixExpression node)
 	{
-		int blockHashCode = ASTNodeUtils.getBlockDepth(node);
+		Logger.logInfo("Entering InfixExpression");
+		
+		int blockHashCode = ASTNodeUtils.getBlockId(node);
 		String leftIdentifier = node.getLeftOperand() + "";
 		String rightIdentifier = node.getRightOperand() + "";
 		int leftSideValue = this.blockVars.get(blockHashCode).get(leftIdentifier) != null ? this.blockVars.get(blockHashCode).get(leftIdentifier) : Integer.parseInt(leftIdentifier);
@@ -194,6 +220,8 @@ public class SrcASTVisitor extends ASTVisitor
 	
 	public boolean visit(ReturnStatement node)
 	{
+		Logger.logInfo("Entering ReturnStatement");
+		
 		int value = 0;
 		
 		Expression expr = node.getExpression();
@@ -204,7 +232,7 @@ public class SrcASTVisitor extends ASTVisitor
 		else if (expr.getNodeType() == Type.INFIX_EXPRESSION)
 			value = visitInfix((InfixExpression)expr);
 		else if (expr.getNodeType() == Type.SIMPLE_NAME)
-			value = this.blockVars.get(ASTNodeUtils.getBlockDepth(node)).get(expr + "");
+			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).get(expr + "");
 		
 		return true;
 	}	

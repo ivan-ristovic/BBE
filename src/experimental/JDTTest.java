@@ -9,6 +9,8 @@ import org.eclipse.jdt.core.dom.*;
 
 import com.github.gumtreediff.utils.Pair;
 
+import bbe.MappingFactory;
+
 public class JDTTest 
 {
 	
