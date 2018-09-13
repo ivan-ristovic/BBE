@@ -89,7 +89,7 @@ public class SrcASTVisitor extends ASTVisitor
 				value = Integer.parseInt(expr + "");
 			// If right side is infix expression ex. x = a + b
 			else if (expr.getNodeType() == Type.INFIX_EXPRESSION)
-				value = visitInfix((InfixExpression)expr);
+				value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).getInfixExpressionValue((InfixExpression)expr);
 			// If right side is simple name ex. x = y
 			else if (expr.getNodeType() == Type.SIMPLE_NAME) {
 				// If it is variable and we have it in map
@@ -116,7 +116,7 @@ public class SrcASTVisitor extends ASTVisitor
 			value = Integer.parseInt(node.getRightHandSide() + "");
 		// Case where we have infix expression on the right side
 		else if (node.getRightHandSide().getNodeType() == Type.INFIX_EXPRESSION) {
-			value = visitInfix((InfixExpression)node.getRightHandSide());
+			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).getInfixExpressionValue((InfixExpression)node.getRightHandSide());
 		}
 		//Case where we have one variable on the right side
 		else {
@@ -183,7 +183,7 @@ public class SrcASTVisitor extends ASTVisitor
 
 		return true;
 	}
-	
+	/*
 	// Infix expressions ex. x + y
 	public int visitInfix(InfixExpression node)
 	{
@@ -213,7 +213,7 @@ public class SrcASTVisitor extends ASTVisitor
 		// Some dummy default return value, will never come here
 		return 0;
 	}
-	
+	*/
 	public boolean visit(ReturnStatement node)
 	{
 		Logger.logInfo("Entering ReturnStatement");
@@ -225,8 +225,8 @@ public class SrcASTVisitor extends ASTVisitor
 		// Calculating return value depending on expression type
 		if (expr.getNodeType() == Type.NUMBER_LITERAL)
 			value = Integer.parseInt(expr + "");
-		else if (expr.getNodeType() == Type.INFIX_EXPRESSION)
-			value = visitInfix((InfixExpression)expr);
+		else if (expr.getNodeType() == Type.INFIX_EXPRESSION) 
+			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).getInfixExpressionValue((InfixExpression)expr);
 		else if (expr.getNodeType() == Type.SIMPLE_NAME)
 			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).get(expr + "");
 		

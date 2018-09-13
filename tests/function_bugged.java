@@ -3,7 +3,8 @@ class A
     int foo()
     {
         int x = 5;
+        int y = 5;
 
-        return x + 2;
+        return x + y + 2;
     }
 }

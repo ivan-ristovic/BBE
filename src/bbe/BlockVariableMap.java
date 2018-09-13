@@ -177,36 +177,43 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		return value;
 	}
 	
-	private int getInfixExpressionValue(InfixExpression expression)
+	public int getInfixExpressionValue(InfixExpression expression)
 	{
 		Expression left = expression.getLeftOperand();
 		Expression right = expression.getRightOperand();
-		String operator = expression.getOperator().toString();
 		
-		int valueLeft = left.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(left.toString()) : 
-			(this.containsKey(left.toString()) ? this.get(left.toString()) : this.get(getPair(left.toString())));
-		int valueRight = right.getNodeType() == Type.NUMBER_LITERAL ? Integer.parseInt(right.toString()) : 
-			(this.containsKey(right.toString()) ? this.get(right.toString()) : this.get(getPair(right.toString())));
+		int valueLeft, valueRight;
+
+		// TODO remove
+		Logger.logInfo("EXPRESSION: " + expression.toString());
+		Logger.logInfo("OPERANDSS: " + left.toString() + " | " + right.toString());
+		
+		if (left.getNodeType() == Type.INFIX_EXPRESSION)
+			valueLeft = getInfixExpressionValue((InfixExpression)left);
+		else if (left.getNodeType() == Type.NUMBER_LITERAL)
+			valueLeft = Integer.parseInt(left.toString());
+		else 
+			valueLeft = (this.containsKey(left.toString()) ? this.get(left.toString()) : this.get(getPair(left.toString())));
+
+		if (right.getNodeType() == Type.INFIX_EXPRESSION)
+			valueRight = getInfixExpressionValue((InfixExpression)right);
+		else if (right.getNodeType() == Type.NUMBER_LITERAL) 
+			valueRight = Integer.parseInt(right.toString());
+		else
+			valueRight = (this.containsKey(right.toString()) ? this.get(right.toString()) : this.get(getPair(right.toString())));
 		
 		int value = 0;
 		
-		switch (operator) {
-			case "+":
-				value = valueLeft + valueRight;
-				break;
-			case "-":
-				value = valueLeft - valueRight;
-				break;
-			case "*":
-				value = valueLeft * valueRight;
-				break;
-			case "/":
-				value = valueLeft / valueRight;
-				break;
-			case "%":
-				value = valueLeft % valueRight;
-				break;
-		}
+		if (expression.getOperator() == InfixExpression.Operator.PLUS)
+			value = valueLeft + valueRight;
+		else if (expression.getOperator() == InfixExpression.Operator.MINUS)
+			value = valueLeft - valueRight;
+		else if (expression.getOperator() == InfixExpression.Operator.TIMES)
+			value = valueLeft * valueRight;
+		else if (expression.getOperator() == InfixExpression.Operator.DIVIDE)
+			value = valueLeft / valueRight;
+		else if (expression.getOperator() == InfixExpression.Operator.REMAINDER)
+			value = valueLeft % valueRight;
 		
 		return value;
 	}
