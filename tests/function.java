@@ -5,7 +5,7 @@ class A
         int x = 5;
         int y = 5;
 
-        return x + y + 1;
+        return x + y;
     }
 }
 

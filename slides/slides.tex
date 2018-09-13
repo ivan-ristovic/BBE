@@ -1,0 +1,96 @@
+% !TEX encoding = UTF-8 Unicode
+\documentclass{beamer}
+\usetheme{Szeged}
+
+\usepackage{color}
+\usepackage{url}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+
+\usepackage[english, serbian]{babel}
+
+%\usepackage[unicode]{hyperref}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\hypersetup{colorlinks,citecolor=green,filecolor=green,linkcolor=blue,urlcolor=blue}
+\usepackage[title]{appendix}
+\usepackage{float}
+\usepackage[graphicx]{realboxes}
+\usepackage{chngcntr}
+\counterwithin{figure}{section}
+\usepackage{listings}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{adjustbox}
+\lstset {
+    language=Java,
+    frame=none,
+    %xleftmargin=-.25in,
+    %xrightmargin=.25in
+    framesep=10pt,
+    tabsize=4,
+    showstringspaces=false,
+    upquote=true,
+    commentstyle=\color{gray},
+    keywordstyle=\color{orange},
+    stringstyle=\color{red},
+    basicstyle=\small\ttfamily,
+    emph={int,char,double,float,unsigned,void,bool},
+    emphstyle={\color{blue}},
+    escapechar=\&,
+    classoffset=1,
+    morekeywords={>,<,.,;,,,-,!,=,~},
+    keywordstyle=\color{weborange},
+    classoffset=0,
+    breaklines=true
+}
+
+\usepackage[font=scriptsize,labelfont=bf]{caption}
+
+
+\title{Sinteza popravki programa na osnovu ispravnih primera}
+
+\author{\href{mailto:mi14031@matf.bg.ac.rs}{Ivan Ristović}, \href{mailto:mi14042@matf.bg.ac.rs}{Milana Kovačević}, \href{mailto:mi14207@matf.bg.ac.rs}{Strahinja Stanojević}
+}
+\date{septembar 2018.}
+
+
+\begin{document}
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\begin{frame}{Zadatak}
+    \begin{itemize}
+        \item Ulaz: Dva ise\v{c}ka koda, jedan koji slu\v{z}i kao specifikacija i drugi sa gre\v{s}kama
+        \item Zadatak: ispraviti kod da postane semanti\v{c}ki ekvivalentan ispravom kodu
+        \item Ispravljen kod treba da zadrzi originalnu strukturu sto je vi\v{s}e mogu\v{c}e
+    \end{itemize}
+\end{frame}
+
+
+\input{parts/01.tex}
+%\input{parts/02.tex}
+%\input{parts/03.tex}
+%\input{parts/04.tex}
+
+
+\begin{frame}{Zaklju\v{c}ak}
+    \centering
+    \begin{itemize}
+        \item Foo
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Pitanja}
+    \centering
+    ???
+\end{frame}
+
+\begin{frame}{}
+    \centering
+    Hvala na pa\v{z}nji!
+\end{frame}
+
+\end{document}
