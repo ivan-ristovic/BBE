@@ -82,9 +82,8 @@ public class SrcASTVisitor extends ASTVisitor
 		int value = 0;
 		
 		// If declaration without initialization
-		if (expr == null)
-			value = Integer.MAX_VALUE;
-		else {
+		if (expr != null)
+		{
 			// If right side is number ex. x = 5
 			if (expr.getNodeType() == Type.NUMBER_LITERAL)
 				value = Integer.parseInt(expr + "");
@@ -96,13 +95,10 @@ public class SrcASTVisitor extends ASTVisitor
 				// If it is variable and we have it in map
 				if (this.blockVars.get(blockHashCode).containsKey(expr + ""))
 					value = this.blockVars.get(blockHashCode).get(expr + "");
-				else 
-					value = Integer.MAX_VALUE;
 			}
 		}
 
 		this.blockVars.get(blockHashCode).put(new String(name + ""), value);
-
 		return false;
 	}
 
@@ -236,4 +232,15 @@ public class SrcASTVisitor extends ASTVisitor
 		
 		return true;
 	}	
+	
+	public boolean visit(IfStatement node)
+	{
+		// TODO if
+		if (this.blockVars.get(ASTNodeUtils.getBlockId(node)).getInfixLogicalExpressionValue((InfixExpression)node.getExpression()))
+			visit((Block)node.getThenStatement());
+		else 
+			if (node.getElseStatement() != null)
+				visit((Block)node.getElseStatement());
+		return false;
+	}
 }

@@ -27,6 +27,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	public BlockVariableMap()
 	{
 		super();
+		this.updates = new ArrayList<Pair<String, String>>();
 	}
 	
 	public BlockVariableMap(ArrayList<Pair<String, String>> updates)
@@ -70,7 +71,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	}
 	
 	public String getPair(String variable)
-	{
+	{    
 		for (Pair<String, String> pair : updates)
 			if (pair.first.equals(variable))		
 				return pair.second;
@@ -126,7 +127,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		return true;
 	}
 	
-	private boolean getInfixLogicalExpressionValue (InfixExpression expression)
+	public boolean getInfixLogicalExpressionValue (InfixExpression expression)
 	{
 		Expression left = expression.getLeftOperand();
 		Expression right = expression.getRightOperand();
@@ -137,7 +138,9 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		if (left.getNodeType() == Type.NUMBER_LITERAL)
 			valueLeft = Integer.parseInt(left.toString());
 		else if (left.getNodeType() == Type.SIMPLE_NAME)
+		{
 			valueLeft = this.containsKey(left.toString()) ? this.get(left.toString()) : this.get(getPair(left.toString()));
+		}
 		else if (left.getNodeType() == Type.INFIX_EXPRESSION)
 			valueLeft = getInfixExpressionValue((InfixExpression)left);
 		

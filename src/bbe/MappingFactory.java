@@ -3,6 +3,8 @@ package bbe;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.eclipse.jdt.core.dom.Type;
+
 import com.github.gumtreediff.actions.ActionGenerator;
 import com.github.gumtreediff.actions.model.Action;
 import com.github.gumtreediff.actions.model.Delete;
@@ -49,6 +51,8 @@ public class MappingFactory
 		for (Action action : g.generate()) {
 			if (action instanceof Update) {
 				Update upd = (Update)action;
+				if (upd.getNode().getType() != Type.SIMPLE_NAME)
+					continue;
 				renames.add(new Pair<String, String>(upd.getNode().getLabel(), upd.getValue()));
 				Logger.logInfo("Update action! adding to list: " + upd.getNode().getLabel() + ", " + upd.getValue());
 			}
@@ -56,12 +60,24 @@ public class MappingFactory
 				Delete del = (Delete)action;
 				if (del.getNode().getLabel().isEmpty())
 					continue;
+				// do not add pair (int, null) in the list
+				if (del.getNode().getType() == Type.PRIMITIVE_TYPE || del.getNode().getType() == Type.NUMBER_LITERAL)
+					continue;
+				// consider only different variable names as difference
+				if (!typeIsImportant(del.getNode().getType()))
+					continue;
 				renames.add(new Pair<String, String>(del.getNode().getLabel(), MISSING));
 				Logger.logInfo("Delete action! adding to list: " + del.getNode().getLabel() + ", " + MISSING);
 			}
 			else if (action instanceof Insert) {
 				Insert ins = (Insert)action;
 				if (ins.getNode().getLabel().isEmpty())
+					continue;
+				// do not add pair (null, int) in the list
+				if (ins.getNode().getType() == Type.PRIMITIVE_TYPE || ins.getNode().getType() == Type.NUMBER_LITERAL)
+					continue;
+				// consider only different variable names as difference
+				if (!typeIsImportant(ins.getNode().getType()))
 					continue;
 				renames.add(new Pair<String, String>(MISSING, ins.getNode().getLabel()));
 				Logger.logInfo("Insert action! adding to list: " + MISSING + ", " + ins.getNode().getLabel());
@@ -73,6 +89,13 @@ public class MappingFactory
 		}
 
 		return renames;
+	}
+	
+	public boolean typeIsImportant(int type)
+	{
+		if (type == Type.VARIABLE_DECLARATION_FRAGMENT || type == Type.VARIABLE_DECLARATION_STATEMENT)
+			return true;
+		return false;
 	}
 	
 	public boolean hasOnlyUpdateActions()

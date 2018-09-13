@@ -33,12 +33,12 @@ public class Program
 			Logger.logErrorAndExit("failed to create mapping");
 		}
 		
-		/* FIXME */
+		/* FIXME
 		if (mf.hasOnlyUpdateActions()) {
 			Logger.logInfo("The two given sources are semantically equivallent.");
 			System.exit(0);
 		}
-				
+		*/	
 		// if they are, proceed with the JDT API AST traversal using our custom traverser
 		
 		ASTTraverser traverser = null;
@@ -48,7 +48,7 @@ public class Program
 			Logger.logErrorAndExit("Failed to load the source files");
 		}
 
-		Logger.logInfo("\n\n--- Traversing source tree... ---");
+		Logger.logInfo("--- Traversing source tree... ---");
 		HashMap<Integer, BlockVariableMap> vars = traverser.traverseSrcTree();
 		
 		// TODO remove or beautify if we wish to show end results
@@ -63,10 +63,10 @@ public class Program
 	        }
 	    }
 
-		Logger.logInfo("\n\n--- Traversing dest tree... ---");
+		Logger.logInfo("--- Traversing dest tree... ---");
 		traverser.traverseDestTree(vars);		
 		
-		Logger.logInfo("\n\n--- Done! ---");
+		Logger.logInfo("--- Done! ---");
 		
 		Logger.closeWriter();
 	}

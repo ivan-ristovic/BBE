@@ -4,8 +4,9 @@ public class A
 
     private static void foo() 
     {
-        int g = 42;
+        int gasdd=432;
         int h, l;
         ArrayList<Integer> ff = new ArrayList<Integer>();
+        gasdd=4;
     }
 }

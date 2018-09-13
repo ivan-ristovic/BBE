@@ -4,10 +4,10 @@ public class A
 
     private static void foobar() 
     {
-        int g = 9;
+        int gasdd=42;
         int h, l;
         int a;
         ArrayList<Integer> ff = new ArrayList<Integer>();
-        
+        gasdd=48;
     }
 }

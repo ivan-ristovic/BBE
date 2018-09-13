@@ -116,37 +116,48 @@ public class DestASTVisitor extends ASTVisitor
 		int id = ASTNodeUtils.getBlockId(src);
 		Logger.logInfo("Comparing blocks with id (" + id + ") with conflicting vars (" + conflictingVars + ")");
 
+		ArrayList<Statement> srcMatched = new ArrayList<Statement>();
+		ArrayList<Statement> destMatched = new ArrayList<Statement>();
+		
 	    List<Statement> srcStatements = src.statements();
 	    List<Statement> destStatements = dest.statements();
 	    // Investigate further every conflicting var. Find all statements in which it appears in src,
 	    // and in parallel search for the equivalent in the dest.
 	    // Compare founded statements and determine the difference	    
 		for (String conflictingVar : conflictingVars) {
-			Iterator<Statement> it = destStatements.iterator();
 			
 			for (Statement srcStatement : srcStatements) {
 				if (statementContainsVar(srcStatement, conflictingVar)) {
-					boolean compared = false;
-					while(it.hasNext()) {
-						Statement destStatamenet = it.next();
-						if (statementContainsVar(destStatamenet, conflictingVar)) {
+					
+					for (Statement destStatement : destStatements) {
+						if (destMatched.contains(destStatements))
+							continue;
+						
+						if (statementContainsVar(destStatement, conflictingVar)) {
 							//TODO compare statements
-							boolean result = compareStatements(srcStatement, destStatamenet);
+							boolean result = compareStatements(srcStatement, destStatement);
 							if (result == false) {
-								Logger.logError("Statements are different!" + srcStatement + " " + destStatamenet);
+								Logger.logError("Statements are different!" + srcStatement + " " + destStatement);
 								// TODO handle this!
 							}
-							compared = true;
-							break;
+							else
+							{
+								Logger.logError("Statements are the same! Adding to matched arrays: " + srcStatement + " " + destStatement);
+								srcMatched.add(srcStatement);
+								destMatched.add(destStatement);
+								break;
+							}
+							break;						
 						}
 					}
-					if (!compared) {
+					if (!srcMatched.contains(srcStatement)) {
 						Logger.logError("No statement in dest that src statement '" + srcStatement + "' can comare to.");
 					}					
 
 				}				
 			}
 			// TODO check if there are statements in dest that don't exist in src
+			// take unmatched dest statements and print error for them
 		}
 	    
 		return true;
@@ -192,9 +203,12 @@ public class DestASTVisitor extends ASTVisitor
 	
 	private boolean statementContainsVar(Statement stmt, String var)
 	{
-		// TODO find a better way to do this
-		int ind = stmt.toString().indexOf(var + "=");
-		return ind == -1 ? false : true;
+		String[] split =  stmt.toString().split("\\b");
+		for (String s : split)
+			if (var.equals(s))
+				return true;
+		
+		return false;
 	}
 	
 	public boolean visit(VariableDeclarationStatement node) 
@@ -220,9 +234,8 @@ public class DestASTVisitor extends ASTVisitor
 		int value = 0;
 		
 		// If declaration without initialization
-		if (expr == null)
-			value = Integer.MAX_VALUE;
-		else {
+		if (expr != null)
+		{
 			// If right side is number ex. x = 5
 			if (expr.getNodeType() == Type.NUMBER_LITERAL)
 				value = Integer.parseInt(expr + "");
@@ -234,8 +247,6 @@ public class DestASTVisitor extends ASTVisitor
 				// If it is variable and we have it in map
 				if (this.blockVars.get(blockHashCode).containsKey(expr + ""))
 					value = this.blockVars.get(blockHashCode).get(expr + "");
-				else 
-					value = Integer.MAX_VALUE;
 			}
 		}
 		
@@ -374,4 +385,14 @@ public class DestASTVisitor extends ASTVisitor
 		
 		return true;
 	}	
+	
+	public boolean visit(IfStatement node)
+	{
+		if (this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID).getInfixLogicalExpressionValue((InfixExpression)node.getExpression()))
+			visit((Block)node.getThenStatement());
+		else 
+			if (node.getElseStatement() != null)
+				visit((Block)node.getElseStatement());
+		return false;
+	}
 }
