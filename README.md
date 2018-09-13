@@ -4,6 +4,8 @@ A team project for the Software Verification course.
 
 The task is to fix bugs in a given code snippet by giving a syntaxically simalar working code example. For now we provide only Java code analyzer due to usage of the JDT Core DOM API.
 
+In-depth README can be found [here](SystemDescription.pdf).
+
 Developed by:
 - Ivan Ristović
 - Milana Kovačević
