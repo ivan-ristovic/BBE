@@ -1,5 +1,11 @@
-void foo()
+class A 
 {
-    int x = 0;
-    int a = 3, b = 5;
+    int foo()
+    {
+        int x = 0;
+        int a = 3, b = 5;
+
+        return a + b + c;
+    }
 }
+
