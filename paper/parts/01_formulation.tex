@@ -1,7 +1,7 @@
 \section{Problem formulation}
 \label{sec:Formulation}
 
-Instead of writing a long formulation of the problem at hand we will rather provide a series of examples which will serve as an illustration and hopefully give the reader enough to grasp the matter without formal definitions \footnote{Some of the definitions would include semantical equivallence of the two code snippets, which would most probably be hard to formulate and even then would probably be ambiguous.}.
+Instead of writing a long formulation of the problem at hand we will rather provide a series of examples which will serve as an illustration and hopefully give the reader enough information to grasp the matter without formal definitions \footnote{Some of the definitions would include semantical equivallence of the two code snippets, which would most probably be hard to formulate and even then would probably be ambiguous.}.
 
 \begin{exmp}
 \textit{Let's take a look at the following code snippets:}
@@ -24,11 +24,11 @@ int foo2()
 \end{lstlisting}
 \end{tabular}
 
-\textit{These two snippets are clearly semantically different, because the \texttt{foo2} function has different value of \texttt{x} variable than function \texttt{foo1}. If we wish to synthesize a fix for the given example, we would just replace the initializer for variable \texttt{x} in function \texttt{foo2}  from $0$ to $1$.}
+\textit{These two snippets are clearly semantically different, because the \texttt{foo2} function has different value of \texttt{x} variable than function \texttt{foo1}. If we wish to synthesize a fix for the given example pair, we would just replace the initializer for variable \texttt{x} in function \texttt{foo2}  from $0$ to $1$.}
 \qed
 \end{exmp}
 
-We have seen a very simple example which has a simple solution. The problem, however, gets much more complex as new code structures emerge, such as branching and loops. Also, reader might have noticed that semantical equivallence has nothing to do with syntactic equivallence.
+We have seen a very simple example which has a simple solution. The problem, however, gets much more complex as new code structures emerge, such as branching and loops. Also, reader might have noticed that semantical similarity has nothing to do with syntactic similarity.
 
 \begin{exmp}
 \textit{Suppose we are given two code snippets, as before:}
@@ -51,12 +51,12 @@ int fooEq2()
 \end{lstlisting}
 \end{tabular}
 
-\textit{In this example the syntactic difference is enormous, seeing as that the second function has no variables declared and has a single statement, whereas the first one has variables defined and has three statements. Both functions, however, evaluate to the same result: $4$.}
+\textit{In this example the syntactic difference is enormous, seeing as the second function has no variables declared and has a single statement, whereas the first one has variables defined and has three statements. Both functions, however, evaluate to the same result: $4$.}
 \qed
 \label{exmp:DeleteExmp}
 \end{exmp}
 
-One might think that in most cases comparing the return values should be enough. While that might be true in most cases, the following example proves that in general this statement does not hold.
+One might think that in most cases comparing the return values should be sufficient. While that might be true in most cases, the following example proves that, in general, this statement does not hold.
 
 \begin{exmp}
 \textit{Side effects like these have an enormous impact on the difficulty of the problem at hand:}
@@ -65,7 +65,7 @@ One might think that in most cases comparing the return values should be enough.
 \begin{lstlisting}
 int fooSideEff()
 {
-    System.out.println("Hello!");
+    println("Hello!");
     return 1;
 }
 \end{lstlisting}
@@ -108,7 +108,7 @@ int anotherFooEq2()
 \label{exmp:PlusPlusExample}
 \end{tabular}
 
-\textit{The behavior of \texttt{a++} and \texttt{++a} is exactly the same as long as the value of that expression is not used in that same statement.}
+\textit{The behavior of \texttt{a++} and \texttt{++a} is exactly the same as long as the value of that expression is not used in that same statement. In this case, it is equivallent to \texttt{a += 1}.}
 \qed
 \end{exmp}
 
@@ -119,10 +119,9 @@ int anotherFooEq2()
 \begin{lstlisting}
 int ambFoo1(int x)
 {
-    if (x >= 0)
-        return 1;
-    else
-        return 0;
+    return x >= 0
+        ? 1
+        : 0;
 }
 \end{lstlisting}
 &
@@ -134,7 +133,32 @@ int ambFoo2(int y)
 \end{lstlisting}
 \end{tabular}
 
-\textit{These functions are definitely semantically different, but the fact that they might produce the same result for different inputs creates an additional problem. Therefore, we have assumed complete determinism - in other words all variables have to be initialized before their use.}
+\textit{These functions are definitely semantically different, but if the caller function always invokes functions with argument $1$, their return values will be the same:}
+
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+void wrapper1()
+{
+    int x;
+    x = ambFoo1(1);
+
+    if (x == 1)
+        // ...
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+void wrapper2()
+{
+    int x;
+    x = ambFoo2(1);
+
+    if (x == 1)
+        // ...
+}
+\end{lstlisting}
+\end{tabular}
+
 \qed
 \end{exmp}
 
