@@ -1,0 +1,149 @@
+\begin{frame}[fragile]{Primeri ulaza}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int foo1()
+{
+    int x = 1, a = 2;
+    return x + a;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int foo2()
+{
+    int x = 0, a = 2;
+    return x + a;
+}
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Primeri ulaza}
+    \begin{itemize}
+        \item Ekvivalentno?
+    \end{itemize}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int fooEq1()
+{
+    int x = 1;
+    int a = 2;
+    return x + a + 1;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int fooEq2()
+{
+    return 4;
+}
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Primeri ulaza}
+    \begin{itemize}
+        \item Sporedni efekti
+    \end{itemize}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int fooSideEff()
+{
+    print("Hello!");
+    return 1;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int foo()
+{
+    return 1;
+}
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
+
+\begin{frame}[fragile]{Primeri ulaza}
+    \begin{itemize}
+        \item Mogu\'c{}e evaluirati u nekim slu\v{c}ajevima
+    \end{itemize}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int anotherFooEq1()
+{
+    int x = 0;
+    x += 3;
+    return x;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int anotherFooEq2()
+{
+    int a = 0;
+    a++;
+    a++;
+    ++a;
+    return a;
+}
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Primeri ulaza}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int ambFoo1(int x)
+{
+    if (x >= 0)
+        return 1;
+    else
+        return 0;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int ambFoo2(int y)
+{
+    return y % 2;
+}
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+void wrapper1()
+{
+    int x = ambFoo1(1);
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+void wrapper2()
+{
+    int x = ambFoo2(1);
+}
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
