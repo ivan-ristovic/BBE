@@ -17,8 +17,8 @@ public class Program
 		
 		if (args.length < 2) {
 			Logger.logInfo("Using default test files.");
-			sourceFile = "tests/test3.java";
-			destFile = "tests/test3dest.java";
+			sourceFile = "tests/function.java";
+			destFile = "tests/function_bugged.java";
 		} else {
 			sourceFile = args[0];
 			destFile = args[1];

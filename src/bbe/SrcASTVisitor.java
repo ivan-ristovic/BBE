@@ -230,6 +230,8 @@ public class SrcASTVisitor extends ASTVisitor
 		else if (expr.getNodeType() == Type.SIMPLE_NAME)
 			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).get(expr + "");
 		
+		this.blockVars.get(ASTNodeUtils.getBlockId(node)).put(ASTNodeUtils.getContainingMethodName(node), value);
+		
 		return true;
 	}	
 	

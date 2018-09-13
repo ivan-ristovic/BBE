@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.ReturnStatement;
 
 public class ASTNodeUtils 
 {
@@ -28,6 +30,12 @@ public class ASTNodeUtils
 		_counters.put(depth, order + 1);
 	}
 	
+	public static String getContainingMethodName(ReturnStatement node)
+	{
+		MethodDeclaration decl = getParentMethodDeclaration(node);
+		return decl.getName().toString();
+	}
+	
 	public static int getBlockDepth(ASTNode node)
 	{
 		if (node == null)
@@ -42,5 +50,16 @@ public class ASTNodeUtils
 	public static void resetCounters()
 	{
 		_counters.clear();
+	}
+	
+	private static MethodDeclaration getParentMethodDeclaration(ASTNode node) 
+	{
+		if (node == null)
+			return null;
+		
+		if (node instanceof MethodDeclaration)
+			return (MethodDeclaration)node;
+		
+		return getParentMethodDeclaration(node.getParent());
 	}
 }

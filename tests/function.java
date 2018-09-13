@@ -2,10 +2,9 @@ class A
 {
     int foo()
     {
-        int x = 0;
-        int a = 3, b = 5;
+        int x = 5;
 
-        return a + b + c;
+        return x + 1;
     }
 }
 

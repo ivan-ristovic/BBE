@@ -3,12 +3,9 @@ class A
     int foo()
     {
         int x = 0;
-        int a, b;
 
-        x = 5;
-        a = 2 + 1;
-        c = 5
+        x = 4 + 1;
 
-        return a + b + c;
+        return x + 1;
     }
 }
