@@ -2,14 +2,12 @@ package bbe;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.jdt.core.dom.*;
 
 
-@SuppressWarnings("unchecked")
 public class SrcASTVisitor extends ASTVisitor
 {
 	private HashMap<Integer, BlockVariableMap> blockVars;
@@ -18,7 +16,6 @@ public class SrcASTVisitor extends ASTVisitor
 	public SrcASTVisitor()
 	{
 		this.blockVars = new HashMap<Integer, BlockVariableMap>();
-		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap());
 		ASTNodeUtils.resetCounters();
 	}
 	
@@ -28,6 +25,18 @@ public class SrcASTVisitor extends ASTVisitor
 		return this.blockVars;
 	}
 
+	public boolean visit(CompilationUnit node)
+	{
+		Logger.logInfo("Entering Root Block");
+		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap());
+		return true;
+	}
+	
+	public void endVisit(CompilationUnit node)
+	{
+		Logger.logInfo("Exiting Root Block");
+	}
+	
 	public boolean visit(Block node) 
 	{
 		Logger.logInfo("Entering Block");
@@ -43,8 +52,6 @@ public class SrcASTVisitor extends ASTVisitor
 
 	public void endVisit(Block node) 
 	{	
-		Logger.logInfo("Exiting Block");
-		
 		int id = ASTNodeUtils.getBlockId(node);
 		int parId = ASTNodeUtils.getBlockId(node.getParent());
 		
@@ -63,11 +70,13 @@ public class SrcASTVisitor extends ASTVisitor
 	{
 		Logger.logInfo("Entering VariableDeclarationStatement");
 		
+		/*
 		Type type = node.getType();
 		for (Modifier modifier : (List<Modifier>)node.modifiers()) {
 			// TODO check modifiers for each variable if they match in both files
 			// if we want to support modifiers, then the var value in map has to be a class type :(
-		}
+		}		
+		*/
 		return true;
 	}
 	
@@ -81,7 +90,6 @@ public class SrcASTVisitor extends ASTVisitor
 		
 		int value = 0;
 		
-		// If declaration without initialization
 		if (expr != null)
 		{
 			// If right side is number ex. x = 5
@@ -98,6 +106,7 @@ public class SrcASTVisitor extends ASTVisitor
 			}
 		}
 
+		Logger.logInfo("Initializing variable " + name + " to: " + value);
 		this.blockVars.get(blockHashCode).put(new String(name + ""), value);
 		return false;
 	}

@@ -12,7 +12,6 @@ import com.github.gumtreediff.actions.model.Update;
 import com.github.gumtreediff.actions.model.Insert;
 import com.github.gumtreediff.client.Run;
 import com.github.gumtreediff.gen.Generators;
-import com.github.gumtreediff.matchers.Mapping;
 import com.github.gumtreediff.matchers.Matcher;
 import com.github.gumtreediff.matchers.Matchers;
 import com.github.gumtreediff.tree.ITree;
@@ -43,9 +42,6 @@ public class MappingFactory
 	public ArrayList<Pair<String, String>> getUpdates()
 	{
 		ArrayList<Pair<String, String>> renames = new ArrayList<Pair<String, String>>();
-		
-		for (Mapping mapping : this.matcher.getMappingsAsSet())
-			System.out.println("Mapping: " + mapping.first.toShortString() + " - " + mapping.second.toShortString());
 		
 		ActionGenerator g = new ActionGenerator(t1, t2, this.matcher.getMappings());
 		for (Action action : g.generate()) {
@@ -91,33 +87,25 @@ public class MappingFactory
 		return renames;
 	}
 	
-	public boolean typeIsImportant(int type)
-	{
-		if (type == Type.VARIABLE_DECLARATION_FRAGMENT || type == Type.VARIABLE_DECLARATION_STATEMENT)
-			return true;
-		return false;
-	}
-	
-	public boolean hasOnlyUpdateActions()
+	public boolean hasOnlyVariableUpdateActions()
 	{
 		ActionGenerator g = new ActionGenerator(t1, t2, this.matcher.getMappings());
 		for (Action action : g.generate()) {
 			if (!(action instanceof Update))
 				return false;
-			Update q = (Update)action;
-			try {
-				int old = Integer.parseInt(q.getNode().getLabel());
-				int n = Integer.parseInt(q.getValue());
-				
-				// TODO
-				
+
+			Update upd = (Update)action;
+			if (upd.getNode().getType() != Type.SIMPLE_NAME)
 				return false;
-			}
-			catch(NumberFormatException e) {
-				Logger.logWarning("Simple var name changed from " + q.getNode().getLabel() + " to " + q.getValue() + ".");
-				continue;
-			}
 		}
+		
 		return true;
+	}
+	
+	private boolean typeIsImportant(int type)
+	{
+		if (type == Type.VARIABLE_DECLARATION_FRAGMENT || type == Type.VARIABLE_DECLARATION_STATEMENT)
+			return true;
+		return false;
 	}
 }

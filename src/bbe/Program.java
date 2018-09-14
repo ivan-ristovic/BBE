@@ -16,14 +16,15 @@ public class Program
 		String destFile = null;
 		
 		if (args.length < 2) {
+			// TODO remove
 			Logger.logInfo("Using default test files.");
-			sourceFile = "tests/function.java";
-			destFile = "tests/function_bugged.java";
+			sourceFile = "tests/simple.java";
+			destFile = "tests/simple_bugged.java";
 		} else {
 			sourceFile = args[0];
 			destFile = args[1];
 		}
-		Logger.logInfo("Using test files: Source: " + sourceFile + ", Dest: " + destFile);
+		Logger.logInfo("Analyzing:\n\tSource:\t" + sourceFile + "\n\tDest:\t" + destFile);
 		
 		
 		MappingFactory mf = null;
@@ -33,13 +34,11 @@ public class Program
 			Logger.logErrorAndExit("failed to create mapping");
 		}
 		
-		/* FIXME
-		if (mf.hasOnlyUpdateActions()) {
-			Logger.logInfo("The two given sources are semantically equivallent.");
+		if (mf.hasOnlyVariableUpdateActions()) {
+			Logger.logInfo("The two given snippets are semantically equivallent.");
 			System.exit(0);
 		}
-		*/	
-		// if they are, proceed with the JDT API AST traversal using our custom traverser
+		
 		
 		ASTTraverser traverser = null;
 		try {
@@ -51,6 +50,7 @@ public class Program
 		Logger.logInfo("--- Traversing source tree... ---");
 		HashMap<Integer, BlockVariableMap> vars = traverser.traverseSrcTree();
 		
+		/*
 		// TODO remove or beautify if we wish to show end results
 		Iterator it = vars.entrySet().iterator();
 	    while (it.hasNext()) {
@@ -62,8 +62,9 @@ public class Program
 	            System.out.println(ipair.getKey() + " = " + ipair.getValue());
 	        }
 	    }
+	    */
 
-		Logger.logInfo("--- Traversing dest tree... ---");
+		Logger.logInfo("--- Traversing dest tree and listing conflicts... ---");
 		traverser.traverseDestTree(vars);		
 		
 		Logger.logInfo("--- Done! ---");

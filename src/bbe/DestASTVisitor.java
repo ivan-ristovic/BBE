@@ -29,11 +29,6 @@ public class DestASTVisitor extends ASTVisitor
 		this.expectedVars = expectedVars;
 		this.updates = renames;
 		ASTNodeUtils.resetCounters();
-		/*Iterator<Entry<Integer, BlockVariableMap>> it = this.expectedVars.entrySet().iterator();
-	    while (it.hasNext()) {
-	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
-	        pair.getValue().renameVars(renames);
-	    }*/
 	}
 	
 	
@@ -42,6 +37,43 @@ public class DestASTVisitor extends ASTVisitor
 		return this.blockVars;
 	}
 
+	public boolean visit(CompilationUnit node)
+	{
+		Logger.logInfo("Entering Root Block");
+		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap());
+		return true;
+	}
+	
+	public void endVisit(CompilationUnit node)
+	{
+		Logger.logInfo("Exiting Root Block");
+	    
+	    ArrayList<String> conflictingVars = new ArrayList<String>();
+	    boolean hasBlockConflicts = false;
+	    Iterator<Entry<String, Integer>> it = this.expectedVars.get(ASTNodeUtils.ROOT_BLOCK_ID).entrySet().iterator();
+	    while (it.hasNext()) {		    
+	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
+	    	String srcName = pair.getKey();
+	    	Pair<String, String> rename = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID).getRenamePair(srcName);
+	    	String destName = rename != null ? rename.second : srcName;
+	    	if (destName == MappingFactory.MISSING) {
+	    		Logger.logError("Variable (" + srcName + ") doesn't exist in dest.");
+	    	}
+	    	else {		    	
+				int srcValue = this.expectedVars.get(ASTNodeUtils.ROOT_BLOCK_ID).get(srcName);
+				int destValue = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID).get(destName);
+				if (srcValue != destValue) {
+					Logger.logError("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
+					conflictingVars.add(srcName);
+					hasBlockConflicts = true;
+				}
+	    	}
+	    }
+	    
+	    Logger.logInfo("Root Block traversed with conflicts: " + hasBlockConflicts);
+	}
+	
+	
 	public boolean visit(Block node)
 	{
 		Logger.logInfo("Entering Block");
@@ -214,12 +246,13 @@ public class DestASTVisitor extends ASTVisitor
 	public boolean visit(VariableDeclarationStatement node) 
 	{
 		Logger.logInfo("Entering VariableDeclarationStatement");
-		
+		/*
 		Type type = node.getType();
 		for (Modifier modifier : (List<Modifier>)node.modifiers()) {
 			// TODO check modifiers for each variable if they match in both files
 			// if we want to support modifiers, then the var value in map has to be a class type :(
 		}
+		*/
 		return true;
 	}
 	
@@ -249,7 +282,8 @@ public class DestASTVisitor extends ASTVisitor
 					value = this.blockVars.get(blockHashCode).get(expr + "");
 			}
 		}
-		
+
+		Logger.logInfo("Initializing variable " + name + " to: " + value);
 		this.blockVars.get(blockHashCode).put(new String(name + ""), value);
 
 		return false;

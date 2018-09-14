@@ -66,6 +66,5 @@ public class ASTTraverser
 	{
 		DestASTVisitor visitor = new DestASTVisitor(expectedVars, renames);
 		this.destUnit.accept(visitor);
-		// return indicator of success
 	}
 }
