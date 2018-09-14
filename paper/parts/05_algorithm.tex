@@ -73,19 +73,20 @@ int foo()
     if (a > 3) {
         // Block depth 2, ordinal 1
         x = 2;
-        // End of block: Update x in parent blocks
+        // End of block: Update x in parent
     }
 
-    // x = 1 here because of the update
+    // x = 2 here because of the update
 
     int c = 1;
     if (a > 3) {
         // Block depth 2, ordinal 2
         c = 2;
-        // End of block: Update c in parent blocks
+        // End of block: Update c in parent
     }
 
     // Vars: x = 2, a = 5, c = 2
+    // End of block: Update x in parent
 }
 
 // End of root block: x = 2
@@ -127,20 +128,21 @@ int foo()
     if (a < 3) {
         // Block depth 2, ordinal 1
         y = 2;
-        // End of block: Update y in parent blocks
+        // End of block: Update y in parent
     }
 
-    // x = 1 here because of the update
+    // y = 2 here because of the update
 
     int c = 1;
     if (a < 3) {
         // Block depth 2, ordinal 2
         c = 2;
-        // End of block: Update c in parent blocks
+        // End of block: Update c in parent
     }
 
     // Vars: y = 2, a = 2, c = 2
-    // Conflict found: a = 1 in source, but found a = 2
+    // Conflict found: a = 5 in source, but found a = 2
+    // End of block: Update y in parent
 }
 
 // End of root block: y = 2
@@ -151,7 +153,7 @@ int foo()
 \qed
 \end{exmp}
 
-The pseudo code of the algorithm can be seen in figure \ref{fig:WhileAST}. Returned conflicts can be used to either list or repare the code. For now we are just listing the conflicts.
+The pseudo code of the algorithm can be seen in figure \ref{fig:AnalysisAlg}. Returned conflicts can be used to either list or repare the code. For now we are just listing the conflicts.
 
 \begin{figure}[H]
 \centering
@@ -174,5 +176,5 @@ begin
 end
 \end{lstlisting}
 \caption{Our analysis algorithm in pseudocode}
-\label{fig:WhileAST}
+\label{fig:AnalysisAlg}
 \end{figure}

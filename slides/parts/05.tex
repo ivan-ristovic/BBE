@@ -1,0 +1,171 @@
+\begin{frame}[fragile]{Algoritam poredjenja}
+    \begin{itemize}
+        \item Pretpostavka: Semanti\v{c}ki ekvivalentni kodovi imaju iste vrednosti promenljivih na izlazu svakog bloka
+    \end{itemize}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}
+int x = 1;
+int foo()
+{
+    int a = 5;
+
+    if (a > 3)
+        x = 2;
+
+    int c = 1;
+
+    if (a > 3)
+        c = 2;
+}
+\end{lstlisting}
+&
+\begin{lstlisting}
+int y = 1;
+int foo2()
+{
+    int a = 2;
+
+    if (a < 3)
+        y = 2;
+
+    int c = 1;
+
+    if (a < 3)
+        c = 2;
+}
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Algoritam poredjenja}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
+// Block depth 0, ordinal 1
+int x = 1;
+
+int foo()
+{
+    // Block depth 1, ordinal 1
+    // Vars passed: x = 1
+
+    int a = 5;
+
+    if (a > 3) {
+        // Block depth 2, ordinal 1
+        x = 2;
+        // End of block: Update x in parent
+    }
+
+    // x = 2 here because of the update
+\end{lstlisting}
+&
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
+    int c = 1;
+    if (a > 3) {
+        // Block depth 2, ordinal 2
+        c = 2;
+        // End of block: Update c in parent
+    }
+
+    // Vars: x = 2, a = 5, c = 2
+    // End of block: Update x in parent
+}
+
+// End of root block: x = 2
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Algoritam poredjenja}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ | c | c | c |}
+    \hline
+    Block depth & Block ordinal & Variables \\
+    \hline
+    0 & 1 & x \\
+    1 & 1 & x, a, c \\
+    2 & 1 & x, a \\
+    2 & 2 & x, a, c \\
+    \hline
+\end{tabular}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Algoritam poredjenja}
+\begin{figure}[!h]
+\centering
+\begin{tabular}{ p{4.5cm} p{4.5cm} }
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
+// Block depth 0, ordinal 1
+int y = 1;  // Matches to x
+
+int foo()
+{
+    // Block depth 1, ordinal 1
+    // Vars passed: y = 1
+
+    int a = 2;
+
+    if (a < 3) {
+        // Block depth 2, ordinal 1
+        y = 2;
+        // End of block: Update y in parent
+    }
+
+    // y = 2 here because of the update
+\end{lstlisting}
+&
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
+    int c = 1;
+    if (a < 3) {
+        // Block depth 2, ordinal 2
+        c = 2;
+        // End of block: Update c in parent
+    }
+
+    // Vars: y = 2, a = 2, c = 2
+    // Conflict found: a = 5 in source, but found a = 2
+    // End of block: Update y in parent
+}
+
+// End of root block: y = 2
+\end{lstlisting}
+\end{tabular}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[fragile]{Algoritam poredjenja}
+\begin{figure}[!h]
+\centering
+\begin{lstlisting}[basicstyle=\tiny\ttfamily]
+Analyze(tree1: AST, tree2: AST)
+begin
+    if (CreateMatcher(tree1, tree2).OnlyUpdateActionsFound()):
+        /* We have found only rename actions */
+        print("Given snippets are equivallent")
+        return
+
+    /* In general case, traverse the first tree */
+    vmap = tree1.TraverseAndRecordVars()
+
+    /* Traverse the second tree and compare vars per block */
+    conflicts = tree2.TraverseAndCompareVars(vmap)
+
+    foreach (conflict in conflicts):
+        print(conflict.Details)
+end
+\end{lstlisting}
+\end{figure}
+\end{frame}
