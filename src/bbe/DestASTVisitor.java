@@ -169,12 +169,37 @@ public class DestASTVisitor extends ASTVisitor
 				if (statementContainsVar(srcStatement, conflictingVar)) {
 					
 					for (Statement destStatement : destStatements) {
-						if (destMatched.contains(destStatements))
+						if (destMatched.contains(destStatement))
 							continue;
 						
 						if (statementContainsVar(destStatement, conflictingVar)) {
 							//TODO compare statements
-							boolean result = compareStatements(srcStatement, destStatement);
+							boolean result = true;
+							boolean isSrcIf = srcStatement instanceof IfStatement;
+							boolean isDestIf = destStatement instanceof IfStatement;
+							if (isSrcIf && isDestIf) {
+								IfStatement srcIf = (IfStatement)srcStatement;
+								IfStatement destIf = (IfStatement)destStatement;
+								int srcIfParId = ASTNodeUtils.getBlockId(srcIf.getParent());
+								int destIfParId = ASTNodeUtils.getBlockId(destIf.getParent());
+								boolean srcCondVal = this.blockVars.get(srcIfParId).getInfixLogicalExpressionValue((InfixExpression)srcIf.getExpression());
+								boolean destCondVal = this.blockVars.get(destIfParId).getInfixLogicalExpressionValue((InfixExpression)destIf.getExpression());
+								if (srcCondVal != destCondVal) {
+									this.blockVars.get(destIfParId).checkInfix((InfixExpression)srcIf.getExpression(), (InfixExpression)destIf.getExpression());
+									continue;
+								}
+
+								if (srcCondVal)
+									result = compareBlocks((Block)srcIf.getThenStatement(), (Block)destIf.getThenStatement(), conflictingVars);
+								else
+									result = compareBlocks((Block)srcIf.getElseStatement(), (Block)destIf.getElseStatement(), conflictingVars);
+							} else if (!isSrcIf && !isDestIf) { 
+								Logger.logInfo(srcStatement.toString() + " | " + destStatement.toString());
+								result = compareStatements(srcStatement, destStatement);
+							} else {
+								continue;
+							}
+							
 							if (result == false) {
 								Logger.logError("Statements are different!" + srcStatement + " " + destStatement);
 								// TODO handle this!
@@ -431,11 +456,16 @@ public class DestASTVisitor extends ASTVisitor
 	
 	public boolean visit(IfStatement node)
 	{
-		if (this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID).getInfixLogicalExpressionValue((InfixExpression)node.getExpression()))
-			visit((Block)node.getThenStatement());
-		else 
+		System.out.println("Usao u IF");
+		int parId = ASTNodeUtils.getBlockId(node.getParent());
+		if (this.blockVars.get(parId).getInfixLogicalExpressionValue((InfixExpression)node.getExpression())) {
+			node.getThenStatement().accept(this);
+		} else {
 			if (node.getElseStatement() != null)
-				visit((Block)node.getElseStatement());
+				node.getElseStatement().accept(this); 
+		}
+		
+		// TODO PREKORPIRAJ U SRC
 		return false;
 	}
 }

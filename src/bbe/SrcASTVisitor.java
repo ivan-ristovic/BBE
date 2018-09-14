@@ -246,12 +246,13 @@ public class SrcASTVisitor extends ASTVisitor
 	
 	public boolean visit(IfStatement node)
 	{
-		// TODO if
-		if (this.blockVars.get(ASTNodeUtils.getBlockId(node)).getInfixLogicalExpressionValue((InfixExpression)node.getExpression()))
-			visit((Block)node.getThenStatement());
-		else 
+		int parId = ASTNodeUtils.getBlockId(node.getParent());
+		if (this.blockVars.get(parId).getInfixLogicalExpressionValue((InfixExpression)node.getExpression())) {
+			node.getThenStatement().accept(this);
+		} else {
 			if (node.getElseStatement() != null)
-				visit((Block)node.getElseStatement());
+				node.getElseStatement().accept(this); 
+		}
 		return false;
 	}
 }

@@ -5,7 +5,10 @@ public class A
         int x = 5;
         int y = 42;
 
-        if (x > 3)
+        if (x > 3) {
+if (y==42) {
             x = 0;
+}
+	}
     }
 }

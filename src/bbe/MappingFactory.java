@@ -47,7 +47,7 @@ public class MappingFactory
 		for (Action action : g.generate()) {
 			if (action instanceof Update) {
 				Update upd = (Update)action;
-				if (upd.getNode().getType() != Type.SIMPLE_NAME)
+				if (upd.getNode().getType() != Type.SIMPLE_NAME || typeIsImportant(upd.getNode().getParent().getType()))
 					continue;
 				renames.add(new Pair<String, String>(upd.getNode().getLabel(), upd.getValue()));
 				Logger.logInfo("Update action! adding to list: " + upd.getNode().getLabel() + ", " + upd.getValue());

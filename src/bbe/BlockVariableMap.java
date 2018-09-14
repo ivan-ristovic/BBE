@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
@@ -150,9 +151,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		if (left.getNodeType() == Type.NUMBER_LITERAL)
 			valueLeft = Integer.parseInt(left.toString());
 		else if (left.getNodeType() == Type.SIMPLE_NAME)
-		{
 			valueLeft = this.containsKey(left.toString()) ? this.get(left.toString()) : this.get(getPair(left.toString()));
-		}
 		else if (left.getNodeType() == Type.INFIX_EXPRESSION)
 			valueLeft = getInfixExpressionValue((InfixExpression)left);
 		
@@ -530,13 +529,10 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		
 		int len = len1 <= len2 ? len1 : len2;
 		
-		boolean failure = false;
+		boolean failure = true;
 		
 		for (int i = 0; i < len; i++) {
-			if (!failure)
-				failure = checkDeclarations(fragments1.get(i), fragments2.get(i));
-			else
-				checkDeclarations(fragments1.get(i), fragments2.get(i));
+			failure &= checkDeclarations(fragments1.get(i), fragments2.get(i));
 		}
 		
 		// If we want to cover those cases
@@ -551,7 +547,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			}
 		}
 		
-		return !failure;
+		return failure;
 	}
 	
 	public boolean checkDeclarations(VariableDeclarationFragment declaration1, VariableDeclarationFragment declaration2)
@@ -753,4 +749,9 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			
 		return !failure;
 	}
+	
+//	public boolean checkIfStatements(IfStatement srcIf, IfStatement destIf)
+//	{
+//		Statement 
+//	}
 }
