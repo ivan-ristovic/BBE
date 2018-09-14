@@ -25,14 +25,14 @@ public class SrcASTVisitor extends ASTVisitor
 		return this.blockVars;
 	}
 
-	public boolean visit(CompilationUnit node)
+	public boolean visit(TypeDeclaration node)
 	{
-		Logger.logInfo("Entering Root Block");
-		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap());
+		Logger.logInfo("Entering type declaration: " + node.getName());
+		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap(null, node));
 		return true;
 	}
 	
-	public void endVisit(CompilationUnit node)
+	public void endVisit(TypeDeclaration node)
 	{
 		Logger.logInfo("Exiting Root Block");
 	}

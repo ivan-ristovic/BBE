@@ -62,9 +62,10 @@ public class ASTTraverser
 		return visitor.getDeclaredVars();
 	}
 	
-	public void traverseDestTree(HashMap<Integer, BlockVariableMap> expectedVars)
+	public HashMap<Integer, BlockVariableMap> traverseDestTree(HashMap<Integer, BlockVariableMap> expectedVars)
 	{
 		DestASTVisitor visitor = new DestASTVisitor(expectedVars, renames);
 		this.destUnit.accept(visitor);
+		return visitor.getDeclaredVars();
 	}
 }

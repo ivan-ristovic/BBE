@@ -18,7 +18,7 @@ public class JDTTest
 	{
 		Scanner sc = null;
 		try {
-			sc = new Scanner(new File("tests/test1.java"));
+			sc = new Scanner(new File("tests/if.java"));
 			String src = sc.useDelimiter("\\A").next();
 
 			ASTParser parser = ASTParser.newParser(AST.JLS8); 
@@ -28,7 +28,7 @@ public class JDTTest
 			
 			final CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
-			MappingFactory mFactory = new MappingFactory("tests/test1.java", "tests/test2.java");
+			MappingFactory mFactory = new MappingFactory("tests/if.java", "tests/if.java");
 			ArrayList<Pair<String, String>> updates = mFactory.getUpdates();
 			
 			cu.accept(new ASTVisitor() {
@@ -741,9 +741,10 @@ public class JDTTest
 				}
 				
 				public boolean visit(IfStatement node) {
-					System.out.println("If: " + node.getExpression());
+//					System.out.println("If: " + node.getExpression());
 					
-					return true;
+					visit((Block) node.getThenStatement());
+					return false;
 				}
 				
 				public boolean visit(ReturnStatement node)

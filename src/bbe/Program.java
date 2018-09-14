@@ -18,8 +18,8 @@ public class Program
 		if (args.length < 2) {
 			// TODO remove
 			Logger.logInfo("Using default test files.");
-			sourceFile = "tests/simple.java";
-			destFile = "tests/simple_bugged.java";
+			sourceFile = "tests/if.java";
+			destFile = "tests/if_bugged.java";
 		} else {
 			sourceFile = args[0];
 			destFile = args[1];
@@ -31,7 +31,7 @@ public class Program
 		try {
 			mf = new MappingFactory(sourceFile, destFile);
 		} catch (IOException e1) {
-			Logger.logErrorAndExit("failed to create mapping");
+			Logger.logErrorAndExit("One of the given filenames does not point to a valid file.");
 		}
 		
 		if (mf.hasOnlyVariableUpdateActions()) {
@@ -48,11 +48,10 @@ public class Program
 		}
 
 		Logger.logInfo("--- Traversing source tree... ---");
-		HashMap<Integer, BlockVariableMap> vars = traverser.traverseSrcTree();
-		
-		/*
+		HashMap<Integer, BlockVariableMap> srcVars = traverser.traverseSrcTree();
+
 		// TODO remove or beautify if we wish to show end results
-		Iterator it = vars.entrySet().iterator();
+		Iterator it = srcVars.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pair = (Map.Entry)it.next();
 	        System.out.println("Block: " + pair.getKey());
@@ -62,10 +61,21 @@ public class Program
 	            System.out.println(ipair.getKey() + " = " + ipair.getValue());
 	        }
 	    }
-	    */
 
 		Logger.logInfo("--- Traversing dest tree and listing conflicts... ---");
-		traverser.traverseDestTree(vars);		
+		HashMap<Integer, BlockVariableMap> destVars = traverser.traverseDestTree(srcVars);	
+
+		// TODO remove or beautify if we wish to show end results
+		it = destVars.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pair = (Map.Entry)it.next();
+	        System.out.println("Block: " + pair.getKey());
+	        Iterator<?> iit = ((HashMap<String, Integer>)pair.getValue()).entrySet().iterator();
+	        while (iit.hasNext()) {
+	            Map.Entry ipair = (Map.Entry)iit.next();
+	            System.out.println(ipair.getKey() + " = " + ipair.getValue());
+	        }
+	    }
 		
 		Logger.logInfo("--- Done! ---");
 		

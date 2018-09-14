@@ -25,10 +25,12 @@ public class DestASTVisitor extends ASTVisitor
 	public DestASTVisitor(HashMap<Integer, BlockVariableMap> expectedVars, ArrayList<Pair<String, String>> renames)
 	{
 		this.blockVars = new HashMap<Integer, BlockVariableMap>();
-		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap(renames));
 		this.expectedVars = expectedVars;
 		this.updates = renames;
 		ASTNodeUtils.resetCounters();
+		
+		for (Pair<String, String> p : renames)
+			Logger.logInfo("Rename: " + p.first + " -> " + p.second);
 	}
 	
 	
@@ -37,42 +39,47 @@ public class DestASTVisitor extends ASTVisitor
 		return this.blockVars;
 	}
 
-	public boolean visit(CompilationUnit node)
+	public boolean visit(TypeDeclaration node)
 	{
-		Logger.logInfo("Entering Root Block");
-		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap());
+		Logger.logInfo("Entering type declaration: " + node.getName());
+		this.blockVars.put(ASTNodeUtils.ROOT_BLOCK_ID, new BlockVariableMap(this.updates, node));
 		return true;
 	}
 	
-	public void endVisit(CompilationUnit node)
+	public void endVisit(TypeDeclaration node)
 	{
-		Logger.logInfo("Exiting Root Block");
+		Logger.logInfo("Exiting class");
 	    
 	    ArrayList<String> conflictingVars = new ArrayList<String>();
-	    boolean hasBlockConflicts = false;
 	    Iterator<Entry<String, Integer>> it = this.expectedVars.get(ASTNodeUtils.ROOT_BLOCK_ID).entrySet().iterator();
 	    while (it.hasNext()) {		    
 	        Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
 	    	String srcName = pair.getKey();
 	    	Pair<String, String> rename = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID).getRenamePair(srcName);
 	    	String destName = rename != null ? rename.second : srcName;
+	    	
+	    	Logger.logError("Searching for var: " + srcName);
+	    	
 	    	if (destName == MappingFactory.MISSING) {
 	    		Logger.logError("Variable (" + srcName + ") doesn't exist in dest.");
 	    	}
-	    	else {		    	
-				int srcValue = this.expectedVars.get(ASTNodeUtils.ROOT_BLOCK_ID).get(srcName);
-				int destValue = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID).get(destName);
+	    	else {
+				Integer srcValue = this.expectedVars.get(ASTNodeUtils.ROOT_BLOCK_ID).get(srcName);
+				Integer destValue = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID).get(destName);
+				
+				if (destValue == null) {
+					Logger.logError("Variable " + destName + " not present in destination code");
+					continue;
+				}
+				
 				if (srcValue != destValue) {
 					Logger.logError("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
+					System.out.println(destName + " initializer should be replaced with " + srcValue);
 					conflictingVars.add(srcName);
-					hasBlockConflicts = true;
 				}
 	    	}
 	    }
-	    
-	    Logger.logInfo("Root Block traversed with conflicts: " + hasBlockConflicts);
 	}
-	
 	
 	public boolean visit(Block node)
 	{

@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
@@ -23,6 +24,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	private static final long serialVersionUID = 1L;
 	private ArrayList<Pair<String, String>> updates;
 	private Block currentBlock = null;
+	private TypeDeclaration currentRootBlock = null;
 
 	public BlockVariableMap()
 	{
@@ -43,8 +45,18 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		this.currentBlock = currentBlock;
 	}
 
+	public BlockVariableMap(ArrayList<Pair<String, String>> updates, TypeDeclaration currentRootBlock)
+	{
+		this.updates = updates;
+		this.currentRootBlock = currentRootBlock;
+	}
+
 	public Block getCurrentBlock() {
 		return currentBlock;
+	}
+
+	public TypeDeclaration getCurrentRootBlock() {
+		return currentRootBlock;
 	}
 	
 	public Pair<String, String> getRenamePair(String variable1)
