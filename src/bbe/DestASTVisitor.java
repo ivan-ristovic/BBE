@@ -194,7 +194,6 @@ public class DestASTVisitor extends ASTVisitor
 								else
 									result = compareBlocks((Block)srcIf.getElseStatement(), (Block)destIf.getElseStatement(), conflictingVars);
 							} else if (!isSrcIf && !isDestIf) { 
-								Logger.logInfo(srcStatement.toString() + " | " + destStatement.toString());
 								result = compareStatements(srcStatement, destStatement);
 							} else {
 								continue;
@@ -235,10 +234,11 @@ public class DestASTVisitor extends ASTVisitor
 		// We didn't make it with constructor that initializes updates
 		BlockVariableMap map = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID);
 		
-		if (src.getNodeType() == Type.VARIABLE_DECLARATION_STATEMENT)
-			map.checkDeclarationStatements((VariableDeclarationStatement)src, (VariableDeclarationStatement)dest);
+		if (src.getNodeType() == Type.VARIABLE_DECLARATION_STATEMENT) 
+			return map.checkDeclarationStatements((VariableDeclarationStatement)src, (VariableDeclarationStatement)dest);
+		
 		// This is the only way I found to make assignment from a statement
-		else if (src.getNodeType() == Type.EXPRESSION_STATEMENT) {
+		if (src.getNodeType() == Type.EXPRESSION_STATEMENT) {
 			ExpressionStatement expressionStatementSrc = (ExpressionStatement)src;
 			ExpressionStatement expressionStatementDest = (ExpressionStatement)dest;
 			
@@ -246,19 +246,19 @@ public class DestASTVisitor extends ASTVisitor
 			Expression e2 = expressionStatementDest.getExpression();
 			
 			if (expressionStatementSrc.getNodeType() == Type.ASSIGNMENT && expressionStatementDest.getNodeType() == Type.ASSIGNMENT) {
-				map.checkAssignments((Assignment) e1, (Assignment)e2);
+				return map.checkAssignments((Assignment) e1, (Assignment)e2);
 			}
 			else if (expressionStatementSrc.getNodeType() == Type.ASSIGNMENT && expressionStatementDest.getNodeType() == Type.PREFIX_EXPRESSION) {
-				map.checkAssignmentAndPrefixPostfix((Assignment) e1, (PrefixExpression)e2, "assignment");
+				return map.checkAssignmentAndPrefixPostfix((Assignment) e1, (PrefixExpression)e2, "assignment");
 			}
 			else if (expressionStatementSrc.getNodeType() == Type.ASSIGNMENT && expressionStatementDest.getNodeType() == Type.POSTFIX_EXPRESSION) {
-				map.checkAssignmentAndPrefixPostfix((Assignment) e1, (PostfixExpression)e2, "assignment");
+				return map.checkAssignmentAndPrefixPostfix((Assignment) e1, (PostfixExpression)e2, "assignment");
 			}
 			else if (expressionStatementSrc.getNodeType() == Type.PREFIX_EXPRESSION && expressionStatementDest.getNodeType() == Type.ASSIGNMENT) {
-				map.checkAssignmentAndPrefixPostfix((Assignment) e2, (PrefixExpression)e1, "expression");
+				return map.checkAssignmentAndPrefixPostfix((Assignment) e2, (PrefixExpression)e1, "expression");
 			}
 			else if (expressionStatementSrc.getNodeType() == Type.POSTFIX_EXPRESSION && expressionStatementDest.getNodeType() == Type.ASSIGNMENT) {
-				map.checkAssignmentAndPrefixPostfix((Assignment) e2, (PostfixExpression)e1, "expression");
+				return map.checkAssignmentAndPrefixPostfix((Assignment) e2, (PostfixExpression)e1, "expression");
 			}
 		}
 		
@@ -456,7 +456,6 @@ public class DestASTVisitor extends ASTVisitor
 	
 	public boolean visit(IfStatement node)
 	{
-		System.out.println("Usao u IF");
 		int parId = ASTNodeUtils.getBlockId(node.getParent());
 		if (this.blockVars.get(parId).getInfixLogicalExpressionValue((InfixExpression)node.getExpression())) {
 			node.getThenStatement().accept(this);
@@ -464,8 +463,6 @@ public class DestASTVisitor extends ASTVisitor
 			if (node.getElseStatement() != null)
 				node.getElseStatement().accept(this); 
 		}
-		
-		// TODO PREKORPIRAJ U SRC
 		return false;
 	}
 }
