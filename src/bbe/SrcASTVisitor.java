@@ -243,7 +243,7 @@ public class SrcASTVisitor extends ASTVisitor
 		this.blockVars.get(ASTNodeUtils.getBlockId(node)).put(ASTNodeUtils.getContainingMethodName(node), value);
 		
 		return true;
-	}	
+	}
 	
 	public boolean visit(IfStatement node)
 	{

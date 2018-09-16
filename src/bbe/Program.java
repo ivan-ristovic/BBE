@@ -7,34 +7,42 @@ import java.util.Map;
 
 public class Program 
 {	
-	// TODO remove hardcoded paths everywhere and allow args
 	public static void main(String[] args) 
 	{
-		// Logger.pathToFile = "log.txt";
-
-		String sourceFile = null;
-		String destFile = null;
-		
 		if (args.length < 2) {
-			// TODO remove
-			Logger.logInfo("Using default test files.");
-			sourceFile = "tests/function.java";
-			destFile = "tests/function_bugged.java";
-		} else {
-			sourceFile = args[0];
-			destFile = args[1];
+			System.err.println("usage :./program path/to/src path/to/dest [-l (logging)] [-f (file logging)]");
+			System.exit(1);
 		}
-		Logger.logInfo("Analyzing:\n\tSource:\t" + sourceFile + "\n\tDest:\t" + destFile);
+
+		String sourceFile = args[0];
+		String destFile = args[1];
+		
+		for (int i = 2; i < args.length; i++) {
+			if (args[i].startsWith("-")) {
+				switch (args[i].substring(1).toLowerCase()) {
+				case "l":
+					Logger.enabled = true;
+					break;
+				case "f":
+					Logger.pathToFile = "log.txt";
+				}
+			}
+		}
+		
+		System.out.println("Analyzing:\n\tSource:\t" + sourceFile + "\n\tDest:\t" + destFile);
 		
 		
 		MappingFactory mf = null;
 		try {
 			mf = new MappingFactory(sourceFile, destFile);
 		} catch (IOException e1) {
-			Logger.logErrorAndExit("One of the given filenames does not point to a valid file.");
+			System.err.println("File(s) not found. Please check the paths.");
+			Logger.logErrorAndExit("FATAL ERROR: IOException");
 		}
 		
 		if (mf.hasOnlyVariableUpdateActions()) {
+		    System.out.println("\n--- Done! ---");
+			Logger.logInfo("Exiting...");
 			System.exit(0);
 		}
 		
@@ -47,10 +55,11 @@ public class Program
 		}
 
 		Logger.logInfo("--- Traversing source tree... ---");
+		
 		HashMap<Integer, BlockVariableMap> srcVars = traverser.traverseSrcTree();
 
-		// TODO remove or beautify if we wish to show end results
-		Iterator<Map.Entry<Integer, BlockVariableMap>> it = srcVars.entrySet().iterator();
+	    System.out.println("\n--- Source file variable map ---");
+	    Iterator<Map.Entry<Integer, BlockVariableMap>> it = srcVars.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
 	        System.out.println("Block id: " + pair.getKey());
@@ -58,9 +67,10 @@ public class Program
 	    }
 
 		Logger.logInfo("--- Traversing dest tree and listing conflicts... ---");
+		
 		HashMap<Integer, BlockVariableMap> destVars = traverser.traverseDestTree(srcVars);	
 
-		// TODO remove or beautify if we wish to show end results
+	    System.out.println("\n--- Dest file variable map ---");
 		it = destVars.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
@@ -68,7 +78,8 @@ public class Program
 	        pair.getValue().printMap();
 	    }
 		
-		Logger.logInfo("--- Done! ---");
+	    System.out.println("\n--- Done! ---");
+		Logger.logInfo("Exiting...");
 		
 		Logger.closeWriter();
 	}

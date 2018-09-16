@@ -72,7 +72,7 @@ public class DestASTVisitor extends ASTVisitor
 				}
 				
 				if (srcValue != destValue) {
-					Logger.logError("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
+					Logger.logError("Different value of variable: " + srcName + " (" + srcValue + ") != " + destName + " (" + destValue + ")");
 					System.out.println(destName + " initializer should be replaced with " + srcValue);
 					conflictingVars.add(srcName);
 				}
@@ -196,11 +196,11 @@ public class DestASTVisitor extends ASTVisitor
 							}
 							
 							if (result == false) {
-								Logger.logError("Statements are different:\n\t" + srcStatement.toString().trim() + "\n\t" + destStatement.toString().trim());
+								Logger.logError("Statements are different:\n\t" + srcStatement.toString().replaceAll("\\n", "\\n\\t").trim() + "\n\t" + destStatement.toString().replaceAll("\\n", "\\n\\t").trim());
 							}
 							else
 							{
-								Logger.logError("Statements are the same! Adding to matched arrays::\n\t" + srcStatement.toString().trim() + "\n\t" + destStatement.toString().trim());
+								Logger.logError("Statements are the same! Adding to matched arrays::\n\t" + srcStatement.toString().replaceAll("\\n", "\\n\\t").trim() + "\n\t" + destStatement.toString().replaceAll("\\n", "\\n\\t").trim());
 								srcMatched.add(srcStatement);
 								destMatched.add(destStatement);
 								break;
@@ -209,7 +209,7 @@ public class DestASTVisitor extends ASTVisitor
 						}
 					}
 					if (!srcMatched.contains(srcStatement)) {
-						Logger.logError("There is no statement in dest to match src statement:\n\t" + srcStatement.toString().trim());
+						Logger.logError("There is no statement in dest to match src statement:\n\t" + srcStatement.toString().replaceAll("\\n", "\\n\\t").trim());
 					}					
 
 				}				

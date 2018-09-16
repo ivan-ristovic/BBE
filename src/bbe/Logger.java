@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class Logger
 {
 	public static String pathToFile = null;
+	public static boolean enabled = false;
 	private static Writer writer = null;
 
 	public Logger()
@@ -40,6 +41,9 @@ public class Logger
 	
 	private static void log(String messageType, String message)
 	{
+		if (!enabled)
+			return;
+		
 		String fullMessage = LocalDateTime.now().toLocalTime() + " " + messageType +  " " + message;
 	    System.err.println(fullMessage);
 	    if (pathToFile != null) {

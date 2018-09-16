@@ -42,8 +42,8 @@ public class ASTTraverser
 	}
 
 	
-	public static CompilationUnit srcUnit;
-	public static CompilationUnit destUnit;
+	private static CompilationUnit srcUnit;
+	private static CompilationUnit destUnit;
 	private ArrayList<Pair<String, String>> renames;
 	
 	
@@ -58,14 +58,21 @@ public class ASTTraverser
 	public HashMap<Integer, BlockVariableMap> traverseSrcTree()
 	{
 		SrcASTVisitor visitor = new SrcASTVisitor();
-		this.srcUnit.accept(visitor);
+		srcUnit.accept(visitor);
 		return visitor.getDeclaredVars();
 	}
 	
 	public HashMap<Integer, BlockVariableMap> traverseDestTree(HashMap<Integer, BlockVariableMap> expectedVars)
 	{
 		DestASTVisitor visitor = new DestASTVisitor(expectedVars, renames);
-		this.destUnit.accept(visitor);
+		destUnit.accept(visitor);
 		return visitor.getDeclaredVars();
+	}
+	
+	public static void printWithLineNumber(String s, int startPos)
+	{
+		System.out.println(s);
+		int startLineNumber = ASTTraverser.destUnit.getLineNumber(startPos);
+		System.out.println("  (at line: " + startLineNumber + ")");
 	}
 }

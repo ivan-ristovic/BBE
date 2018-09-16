@@ -276,7 +276,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			// Both initializers are numbers
 			if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
 				if (!checkNumbers(initializer1, initializer2)) {
-					System.out.println(initializer2 + " should be replaced with " + initializer1 + " in line " + node1.getLocationInParent());
+					System.out.println(initializer2 + " should be replaced with " + initializer1);
 					failure = true;
 				}
 			}
@@ -529,12 +529,12 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		// If we want to cover those cases
 		if (len1 > len2) {
 			for (int i = len2; i < len1; i++) {
-				System.out.println("Declaration of variable " + fragments1.get(i) + " should be added");
+				System.out.println("Declaration of variable " + fragments1.get(i) + " should be added.");
 			}
 		}
 		else if (len2 > len1) {
 			for (int i = len1; i < len2; i++) {
-				System.out.println("Declaration of variable " + fragments2.get(i) + " is extra");
+				System.out.println("Declaration of variable " + fragments2.get(i) + " is redundant.");
 			}
 		}
 		
@@ -550,11 +550,11 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		
 		// If we have one only initializer
 		if (initializer1 != null && initializer2 == null) {
-			System.out.println(initializer1 + " should be added");
+			System.out.println(initializer1 + " should be added.");
 			failure = true;
 		}
 		else if (initializer1 == null && initializer2 != null) {
-			System.out.println(initializer2 + " is extra");
+			System.out.println(initializer2 + " is redundant.");
 			failure = true;
 		}
 		else if (initializer1 != null && initializer2 != null) {
@@ -570,21 +570,19 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		if (e1.getNodeType() == Type.NUMBER_LITERAL) {
 			if (e2.getNodeType() == Type.NUMBER_LITERAL) {
 				if (!checkNumbers(e1, e2)) {
-					System.out.println(e2 + " should be replaced with " + e1);
-					int startLineNumber = ASTTraverser.destUnit.getLineNumber(e2.getStartPosition());
-					System.out.println("Problem is in line: " + startLineNumber);
+					ASTTraverser.printWithLineNumber("BUG FOUND: " + e2 + " should be replaced with " + e1, e2.getStartPosition());
 					failure = true;
 				}
 			}
 			else if (e2.getNodeType() == Type.SIMPLE_NAME) {
 				if (!checkVariableAndNumber(e2.toString(), e1)) {
-					System.out.println(e2 + " should be replaced with " + e1);
+					ASTTraverser.printWithLineNumber("BUG FOUND: " + e2 + " should be replaced with " + e1, e2.getStartPosition());
 					failure = true;
 				}
 			}
 			else if (e2.getNodeType() == Type.INFIX_EXPRESSION) {
 				if (!checkInfixAndNumber((InfixExpression)e2, e1)) {
-					System.out.println(e2 + " should be replaced with " + e1);
+					ASTTraverser.printWithLineNumber("BUG FOUND: " + e2 + " should be replaced with " + e1, e2.getStartPosition());
 					failure = true;
 				}
 			}
@@ -592,10 +590,11 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		else if (e1.getNodeType() == Type.SIMPLE_NAME) {
 			if (e2.getNodeType() == Type.NUMBER_LITERAL) {
 				if (!checkVariableAndNumber(e1.toString(), e2)) {
-					System.out.println(e2 + " should be replaced with " +
+					ASTTraverser.printWithLineNumber("BUG FOUND: " + e2 + " should be replaced with " + 
 							(this.containsKey(e1.toString()) ? e1 : getPair(e1.toString()))
 							+ " or " + 
-							(this.containsKey(e1.toString()) ? this.get(e1.toString()) : this.get(getPair(e1.toString()))));
+							(this.containsKey(e1.toString()) ? this.get(e1.toString()) : this.get(getPair(e1.toString())))
+							, e2.getStartPosition());
 					failure = true;
 				}
 			}
@@ -758,12 +757,12 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	public void printMap()
 	{
 		if (this.isEmpty())
-	        System.out.println("\tMap is empty.");
+	        System.out.println("\tNo variables.");
 			
 		Iterator<Entry<String, Integer>> it = this.entrySet().iterator();
 	    while (it.hasNext()) {
 	    	Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
-	        System.out.println("\tPair: " + pair.getKey() + " " + pair.getValue());
+	        System.out.println("\t" + pair.getKey() + "\t = " + String.format("%3d", pair.getValue()));
 	    }
 
 	}
