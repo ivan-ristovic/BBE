@@ -276,7 +276,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			// Both initializers are numbers
 			if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
 				if (!checkNumbers(initializer1, initializer2)) {
-					System.out.println(initializer2 + " should be replaced with " + initializer1);
+					System.out.println(initializer2 + " should be replaced with " + initializer1 + " in line " + node1.getLocationInParent());
 					failure = true;
 				}
 			}
@@ -571,6 +571,8 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			if (e2.getNodeType() == Type.NUMBER_LITERAL) {
 				if (!checkNumbers(e1, e2)) {
 					System.out.println(e2 + " should be replaced with " + e1);
+					int startLineNumber = ASTTraverser.destUnit.getLineNumber(e2.getStartPosition());
+					System.out.println("Problem is in line: " + startLineNumber);
 					failure = true;
 				}
 			}

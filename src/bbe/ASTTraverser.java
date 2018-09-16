@@ -42,15 +42,15 @@ public class ASTTraverser
 	}
 
 	
-	private CompilationUnit srcUnit;
-	private CompilationUnit destUnit;
+	public static CompilationUnit srcUnit;
+	public static CompilationUnit destUnit;
 	private ArrayList<Pair<String, String>> renames;
 	
 	
 	public ASTTraverser(String srcPath, String destPath, ArrayList<Pair<String, String>> renames) throws IOException
 	{
-		this.srcUnit = createCompilationUnit(readSource(srcPath));
-		this.destUnit = createCompilationUnit(readSource(destPath));
+		srcUnit = createCompilationUnit(readSource(srcPath));
+		destUnit = createCompilationUnit(readSource(destPath));
 		this.renames = renames;
 	}
 	

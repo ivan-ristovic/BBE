@@ -18,8 +18,8 @@ public class Program
 		if (args.length < 2) {
 			// TODO remove
 			Logger.logInfo("Using default test files.");
-			sourceFile = "tests/nested_class.java";
-			destFile = "tests/nested_class_equivallent.java";
+			sourceFile = "tests/function.java";
+			destFile = "tests/function_bugged.java";
 		} else {
 			sourceFile = args[0];
 			destFile = args[1];

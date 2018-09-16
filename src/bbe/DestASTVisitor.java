@@ -128,7 +128,7 @@ public class DestASTVisitor extends ASTVisitor
 				Integer destValue = this.blockVars.get(id).get(destName);
 				
 				if (srcValue != null && destValue != null && srcValue != destValue) {
-					Logger.logError("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
+					System.out.println("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
 					conflictingVars.add(srcName);
 					hasBlockConflicts = true;
 				}
