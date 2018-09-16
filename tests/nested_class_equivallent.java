@@ -1,15 +1,12 @@
 public class FooClass
 {
-    private class FooClassNested
+    private void fooNested()
     {
-        private void fooNested()
-        {
-            int a = 0;
+        int a = 0;
 
-            a++;
-            ++a;
-            a++;
-        }
+        a++;
+        ++a;
+        a++;
     }
 
     void foo()

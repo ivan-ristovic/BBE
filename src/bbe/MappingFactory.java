@@ -3,7 +3,9 @@ package bbe;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Type;
+import org.jrubyparser.ast.Node;
 
 import com.github.gumtreediff.actions.ActionGenerator;
 import com.github.gumtreediff.actions.model.Action;
@@ -47,12 +49,14 @@ public class MappingFactory
 		for (Action action : g.generate()) {
 			if (action instanceof Update) {
 				Update upd = (Update)action;
-				if (upd.getNode().getType() != Type.SIMPLE_NAME || typeIsImportant(upd.getNode().getParent().getType()))
+				Logger.logInfo("Update action: " + upd.getNode().getLabel() + ", " + upd.getValue());				
+				if (upd.getNode().getType() != Type.SIMPLE_NAME || !typeIsImportant(upd.getNode()))
 					continue;
 				renames.add(new Pair<String, String>(upd.getNode().getLabel(), upd.getValue()));
-				Logger.logInfo("Update action! adding to list: " + upd.getNode().getLabel() + ", " + upd.getValue());
+				Logger.logInfo("Update action! Adding to list: " + upd.getNode().getLabel() + ", " + upd.getValue());
 			}
 			else if (action instanceof Delete){
+				Logger.logInfo("Delete action: " + action.getNode().getLabel());
 				Delete del = (Delete)action;
 				if (del.getNode().getLabel().isEmpty())
 					continue;
@@ -60,12 +64,13 @@ public class MappingFactory
 				if (del.getNode().getType() == Type.PRIMITIVE_TYPE || del.getNode().getType() == Type.NUMBER_LITERAL)
 					continue;
 				// consider only different variable names as difference
-				if (!typeIsImportant(del.getNode().getType()))
+				if (!typeIsImportant(del.getNode()))
 					continue;
 				renames.add(new Pair<String, String>(del.getNode().getLabel(), MISSING));
-				Logger.logInfo("Delete action! adding to list: " + del.getNode().getLabel() + ", " + MISSING);
+				Logger.logInfo("Delete action! Adding to list: " + del.getNode().getLabel() + ", " + MISSING);
 			}
 			else if (action instanceof Insert) {
+				Logger.logInfo("Insert action: " + action.getNode().getLabel());
 				Insert ins = (Insert)action;
 				if (ins.getNode().getLabel().isEmpty())
 					continue;
@@ -73,11 +78,10 @@ public class MappingFactory
 				if (ins.getNode().getType() == Type.PRIMITIVE_TYPE || ins.getNode().getType() == Type.NUMBER_LITERAL)
 					continue;
 				// consider only different variable names as difference
-				if (!typeIsImportant(ins.getNode().getType()))
+				if (!typeIsImportant(ins.getNode()))
 					continue;
 				renames.add(new Pair<String, String>(MISSING, ins.getNode().getLabel()));
-				Logger.logInfo("Insert action! adding to list: " + MISSING + ", " + ins.getNode().getLabel());
-				
+				Logger.logInfo("Insert action! Adding to list: " + MISSING + ", " + ins.getNode().getLabel());
 			}
 			else {
 				Logger.logInfo("Unhandeled action! Action name" + action.getName());				
@@ -102,9 +106,13 @@ public class MappingFactory
 		return true;
 	}
 	
-	private boolean typeIsImportant(int type)
+	private boolean typeIsImportant(ITree node)
 	{
+		int type = node.getType();
 		if (type == Type.VARIABLE_DECLARATION_FRAGMENT || type == Type.VARIABLE_DECLARATION_STATEMENT)
+			return true;
+		int parentType = node.getParent() != null ? node.getParent().getType() : 0;
+		if (parentType == Type.VARIABLE_DECLARATION_FRAGMENT || parentType == Type.VARIABLE_DECLARATION_STATEMENT)
 			return true;
 		return false;
 	}

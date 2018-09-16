@@ -8,6 +8,6 @@ class A
         x = 4 + 1;
         y = x;
 
-        return x + y;
+        return x - y;
     }
 }

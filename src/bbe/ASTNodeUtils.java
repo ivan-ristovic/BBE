@@ -30,19 +30,29 @@ public class ASTNodeUtils
 		_counters.put(depth, order + 1);
 	}
 	
+	public static void decrementBlockCount(Block node) 
+	{
+		int depth = getBlockDepth(node);
+		int order = _counters.get(depth) != null ? _counters.get(depth) : 0;
+		
+		Logger.logInfo("Decrementing block counter on depth: " + depth + " | new value: " + (order > 0 ? order - 1 : 0));
+		_counters.put(depth, order > 0 ? order - 1 : 0);
+	}
+	
 	public static String getContainingMethodName(ReturnStatement node)
 	{
 		MethodDeclaration decl = getParentMethodDeclaration(node);
-		return decl.getName().toString();
+		return "$" + decl.getName().toString();
 	}
 	
 	public static int getBlockDepth(ASTNode node)
 	{
 		if (node == null)
 			return 0;
-		
-		if (node instanceof Block)
+
+		if (node instanceof Block) {
 			return 1 + getBlockDepth(node.getParent());
+		}
 		
 		return getBlockDepth(node.getParent());	
 	}

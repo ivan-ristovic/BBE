@@ -40,6 +40,7 @@ public class SrcASTVisitor extends ASTVisitor
 	public boolean visit(Block node) 
 	{
 		Logger.logInfo("Entering Block");
+	    //ASTNodeUtils.incrementBlockCount(node);
 		
 		int id = ASTNodeUtils.getBlockId(node);
 		int parId = ASTNodeUtils.getBlockId(node.getParent());

@@ -7,7 +7,7 @@ public class A
 
         if (x > 3) {
 if (y==42) {
-            x = 0;
+            x = 1;
 }
 	}
     }

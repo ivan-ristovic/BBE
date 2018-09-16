@@ -18,7 +18,6 @@ public class DestASTVisitor extends ASTVisitor
 	private HashMap<Integer, BlockVariableMap> expectedVars;
 	private HashMap<Integer, BlockVariableMap> blockVars;
 	private ArrayList<Pair<String, String>> updates;
-	private String errorMessage;
 	private boolean fatalError;
 
 	
@@ -81,16 +80,16 @@ public class DestASTVisitor extends ASTVisitor
 	    }
 	}
 	
-	public boolean visit(Block node)
+	public boolean visit(Block node) 
 	{
 		Logger.logInfo("Entering Block");
+	    //ASTNodeUtils.incrementBlockCount(node);
 
 		int id = ASTNodeUtils.getBlockId(node);
 		int parId = ASTNodeUtils.getBlockId(node.getParent());
 		
-		if (fatalError && !this.expectedVars.containsKey(parId)) {
-			errorMessage = "block missmatch (" + parId + ")";
-			return false;
+		if (!this.expectedVars.containsKey(id)) {
+			Logger.logErrorAndExit("FATAL ERROR: Block mismatch (" + id + ")");
 		}
 		
 		Logger.logInfo("Adding block to map: " + id + " (parent: " + parId + ")");
@@ -123,14 +122,12 @@ public class DestASTVisitor extends ASTVisitor
 	    	String destName = rename != null ? rename.second : srcName;
 	    	if (destName == MappingFactory.MISSING) {
 	    		Logger.logError("Variable (" + srcName + ") doesn't exist in dest.");
-	    		// TODO should non-existing war be in conflicting vars?
-	    		//conflictingVars.add(srcName);
-				//hasBlockConflicts = true;
 	    	}
-	    	else {		    	
-				int srcValue = this.expectedVars.get(id).get(srcName);
-				int destValue = this.blockVars.get(id).get(destName);
-				if (srcValue != destValue) {
+	    	else {
+				Integer srcValue = this.expectedVars.get(id).get(srcName);
+				Integer destValue = this.blockVars.get(id).get(destName);
+				
+				if (srcValue != null && destValue != null && srcValue != destValue) {
 					Logger.logError("Different value of variable: " + srcName + "(" + srcValue + ") != " + destName + "(" + destValue + ")");
 					conflictingVars.add(srcName);
 					hasBlockConflicts = true;
@@ -172,8 +169,7 @@ public class DestASTVisitor extends ASTVisitor
 						if (destMatched.contains(destStatement))
 							continue;
 						
-						if (statementContainsVar(destStatement, conflictingVar)) {
-							//TODO compare statements
+						if (statementContainsVar(destStatement, getRenamedVar(conflictingVar))) {
 							boolean result = true;
 							boolean isSrcIf = srcStatement instanceof IfStatement;
 							boolean isDestIf = destStatement instanceof IfStatement;
@@ -200,12 +196,11 @@ public class DestASTVisitor extends ASTVisitor
 							}
 							
 							if (result == false) {
-								Logger.logError("Statements are different!" + srcStatement + " " + destStatement);
-								// TODO handle this!
+								Logger.logError("Statements are different:\n\t" + srcStatement.toString().trim() + "\n\t" + destStatement.toString().trim());
 							}
 							else
 							{
-								Logger.logError("Statements are the same! Adding to matched arrays: " + srcStatement + " " + destStatement);
+								Logger.logError("Statements are the same! Adding to matched arrays::\n\t" + srcStatement.toString().trim() + "\n\t" + destStatement.toString().trim());
 								srcMatched.add(srcStatement);
 								destMatched.add(destStatement);
 								break;
@@ -214,31 +209,44 @@ public class DestASTVisitor extends ASTVisitor
 						}
 					}
 					if (!srcMatched.contains(srcStatement)) {
-						Logger.logError("No statement in dest that src statement '" + srcStatement + "' can comare to.");
+						Logger.logError("There is no statement in dest to match src statement:\n\t" + srcStatement.toString().trim());
 					}					
 
 				}				
 			}
-			// TODO check if there are statements in dest that don't exist in src
+			// Check if there are statements in dest that don't exist in src
 			// take unmatched dest statements and print error for them
-		}
+			for (Statement s : destStatements) {
+				if (!destMatched.contains(s) && statementContainsVar(s, getRenamedVar(conflictingVar)))
+					Logger.logError("Cannot match dest statement with any of the statements in src:\n\t" + s.toString().trim());
+			}		
+		}	
 	    
 		return true;
 	}
 	
+	private String getRenamedVar(String variable1)
+	{
+		for (Pair<String, String> pair : this.updates)
+			if (pair.first.equals(variable1)) {		
+				return pair.second;
+			}
+		return variable1;
+	}
+	
 	private boolean compareStatements(Statement src, Statement dest)
 	{
-		Logger.logInfo("Comparing statements: src: " + src + ",  dest: " + dest);
+		Logger.logInfo("Comparing statements: \n\t" + src.toString().trim() + "\n\t" + dest.toString().trim());
 		
 		// Has to be blockVars, because expectedVars throws nullPointer exception, don't have updates
 		// We didn't make it with constructor that initializes updates
-		BlockVariableMap map = this.blockVars.get(ASTNodeUtils.ROOT_BLOCK_ID);
+		BlockVariableMap map = this.blockVars.get(ASTNodeUtils.getBlockId(src));
 		
-		if (src.getNodeType() == Type.VARIABLE_DECLARATION_STATEMENT) 
+		if (src.getNodeType() == Type.VARIABLE_DECLARATION_STATEMENT && dest.getNodeType() == Type.VARIABLE_DECLARATION_STATEMENT) 
 			return map.checkDeclarationStatements((VariableDeclarationStatement)src, (VariableDeclarationStatement)dest);
 		
 		// This is the only way I found to make assignment from a statement
-		if (src.getNodeType() == Type.EXPRESSION_STATEMENT) {
+		if (src.getNodeType() == Type.EXPRESSION_STATEMENT && dest.getNodeType() == Type.EXPRESSION_STATEMENT) {
 			ExpressionStatement expressionStatementSrc = (ExpressionStatement)src;
 			ExpressionStatement expressionStatementDest = (ExpressionStatement)dest;
 			
@@ -261,12 +269,19 @@ public class DestASTVisitor extends ASTVisitor
 				return map.checkAssignmentAndPrefixPostfix((Assignment) e2, (PostfixExpression)e1, "expression");
 			}
 		}
+		if (src.getNodeType() == Type.RETURN_STATEMENT && dest.getNodeType() == Type.RETURN_STATEMENT) {	
+			Logger.logInfo("Comparing return statements");
+			return map.checkReturnStatements((ReturnStatement) src, (ReturnStatement)dest);
+		}
 		
 		return false;
 	}
 	
 	private boolean statementContainsVar(Statement stmt, String var)
 	{
+		if (var.startsWith("$") && stmt.getNodeType() == Type.RETURN_STATEMENT)
+			return true;
+		
 		String[] split =  stmt.toString().split("\\b");
 		for (String s : split)
 			if (var.equals(s))
@@ -444,8 +459,8 @@ public class DestASTVisitor extends ASTVisitor
 		// Calculating return value depending on expression type
 		if (expr.getNodeType() == Type.NUMBER_LITERAL)
 			value = Integer.parseInt(expr + "");
-		else if (expr.getNodeType() == Type.INFIX_EXPRESSION)
-			value = visitInfix((InfixExpression)expr);
+		else if (expr.getNodeType() == Type.INFIX_EXPRESSION) 
+			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).getInfixExpressionValue((InfixExpression)expr);
 		else if (expr.getNodeType() == Type.SIMPLE_NAME)
 			value = this.blockVars.get(ASTNodeUtils.getBlockId(node)).get(expr + "");
 		
@@ -464,5 +479,14 @@ public class DestASTVisitor extends ASTVisitor
 				node.getElseStatement().accept(this); 
 		}
 		return false;
+	}
+	
+	private boolean checkVariableValues(String variable1, String variable2, ASTNode node)
+	{
+		int blockId = ASTNodeUtils.getBlockId(node);
+		int value1 = this.expectedVars.get(blockId).get(variable1);
+		int value2 = this.blockVars.get(blockId).get(variable2);
+		
+		return value1 == value2;
 	}
 }

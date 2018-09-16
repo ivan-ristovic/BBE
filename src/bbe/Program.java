@@ -18,8 +18,8 @@ public class Program
 		if (args.length < 2) {
 			// TODO remove
 			Logger.logInfo("Using default test files.");
-			sourceFile = "tests/if.java";
-			destFile = "tests/if_bugged.java";
+			sourceFile = "tests/nested_class.java";
+			destFile = "tests/nested_class_equivallent.java";
 		} else {
 			sourceFile = args[0];
 			destFile = args[1];
@@ -35,7 +35,6 @@ public class Program
 		}
 		
 		if (mf.hasOnlyVariableUpdateActions()) {
-			Logger.logInfo("The two given snippets are semantically equivallent.");
 			System.exit(0);
 		}
 		
@@ -51,15 +50,11 @@ public class Program
 		HashMap<Integer, BlockVariableMap> srcVars = traverser.traverseSrcTree();
 
 		// TODO remove or beautify if we wish to show end results
-		Iterator it = srcVars.entrySet().iterator();
+		Iterator<Map.Entry<Integer, BlockVariableMap>> it = srcVars.entrySet().iterator();
 	    while (it.hasNext()) {
-	        Map.Entry pair = (Map.Entry)it.next();
-	        System.out.println("Block: " + pair.getKey());
-	        Iterator<?> iit = ((HashMap<String, Integer>)pair.getValue()).entrySet().iterator();
-	        while (iit.hasNext()) {
-	            Map.Entry ipair = (Map.Entry)iit.next();
-	            System.out.println(ipair.getKey() + " = " + ipair.getValue());
-	        }
+	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
+	        System.out.println("Block id: " + pair.getKey());
+	        pair.getValue().printMap();
 	    }
 
 		Logger.logInfo("--- Traversing dest tree and listing conflicts... ---");
@@ -68,13 +63,9 @@ public class Program
 		// TODO remove or beautify if we wish to show end results
 		it = destVars.entrySet().iterator();
 	    while (it.hasNext()) {
-	        Map.Entry pair = (Map.Entry)it.next();
-	        System.out.println("Block: " + pair.getKey());
-	        Iterator<?> iit = ((HashMap<String, Integer>)pair.getValue()).entrySet().iterator();
-	        while (iit.hasNext()) {
-	            Map.Entry ipair = (Map.Entry)iit.next();
-	            System.out.println(ipair.getKey() + " = " + ipair.getValue());
-	        }
+	        Map.Entry<Integer, BlockVariableMap> pair = (Map.Entry<Integer, BlockVariableMap>)it.next();
+	        System.out.println("Block id: " + pair.getKey());
+	        pair.getValue().printMap();
 	    }
 		
 		Logger.logInfo("--- Done! ---");

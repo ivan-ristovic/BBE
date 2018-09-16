@@ -8,10 +8,10 @@ import java.util.Map;
 
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
+import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
@@ -75,8 +75,8 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		String operand1 = experssion.getLeftOperand().toString();
 		String operand2 = experssion.getRightOperand().toString();
 	
-		String pair1 = getPair(operand1);
-		String pair2 = getPair(operand2);
+		String pair1 = getPair(operand1) == null ? operand1 : getPair(operand1);
+		String pair2 = getPair(operand2) == null ? operand2 : getPair(operand2);
 		
 		Pair<String, String> pair = new Pair<String, String>(pair1, pair2);
 		
@@ -94,7 +94,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		return null;
 	}
 	
-	public boolean checkVariables(String variable1, String variable2)
+	public boolean checkVariableNames(String variable1, String variable2)
 	{
 		if (variable1.equals(variable2))
 			return true;
@@ -103,7 +103,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		Pair<String, String> variablePair = this.getRenamePair(variable1);
 		if (variablePair == null) 
 			return false;
-		
+				
 		// If the variable from wrong code is not the same (exactly or at least renamed)
 		// as the one in correct code error
 		if (!variablePair.second.equals(variable2)) {
@@ -125,12 +125,8 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	
 	public boolean checkVariableAndNumber(String variable, Expression expr)
 	{
-//		Iterator<Entry<String, Integer>> it = this.entrySet().iterator();
-//	    while (it.hasNext()) {
-//	    	Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
-//	        System.err.println("Pair: " + pair.getKey() + " " + pair.getValue());
-//	    }
-	    
+		Logger.logError("contains key? " + this.containsKey(variable));
+		Logger.logError("var " + variable);
 	    int value = this.containsKey(variable) ? this.get(variable) : this.get(getPair(variable));
 	    
 		// If variable has different value than number
@@ -195,10 +191,6 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		
 		int valueLeft, valueRight;
 
-		// TODO remove
-		Logger.logInfo("EXPRESSION: " + expression.toString());
-		Logger.logInfo("OPERANDSS: " + left.toString() + " | " + right.toString());
-		
 		if (left.getNodeType() == Type.INFIX_EXPRESSION)
 			valueLeft = getInfixExpressionValue((InfixExpression)left);
 		else if (left.getNodeType() == Type.NUMBER_LITERAL)
@@ -262,8 +254,6 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		String operator1 = node1.getOperator().toString();
 		String operator2 = node2.getOperator().toString();
 		
-		String replacement = "";
-		
 		boolean failure = false;
 		
 		if (!operator1.equals(operator2)) {
@@ -271,7 +261,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			failure = true;
 		}
 		
-		if (!checkVariables(variable1, variable2)) { 
+		if (!checkVariableNames(variable1, variable2)) { 
 			System.out.println(variable2 + " should be replaced with " + 
 					(this.containsKey(variable1) ? variable1 : getPair(variable1)) + " or " + 
 					(this.containsKey(variable1) ? this.get(variable1) : this.get(getPair(variable1))));
@@ -307,27 +297,27 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
 				if (!checkVariableAndNumber(initializer1.toString(), initializer2)) {
 					System.out.println(initializer2 + " should be replaced with " + 
-							(this.containsKey(initializer1) ? initializer1 : getPair(initializer1.toString()))
+							(this.containsKey(initializer1.toString()) ? initializer1 : getPair(initializer1.toString()))
 							+ " or " + 
-							(this.containsKey(initializer1) ? this.get(initializer1) : this.get(getPair(initializer1.toString()))));
+							(this.containsKey(initializer1.toString()) ? this.get(initializer1.toString()) : this.get(getPair(initializer1.toString()))));
 					failure = true;
 				}
 			}
 			else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
-				if (!checkVariables(initializer1.toString(), initializer2.toString())) {
+				if (!checkVariableNames(initializer1.toString(), initializer2.toString())) {
 					System.out.println(initializer2 + " should be replaced with variable " + 
-							(this.containsKey(initializer1) ? initializer1 : getPair(initializer1.toString()))
+							(this.containsKey(initializer1.toString()) ? initializer1 : getPair(initializer1.toString()))
 							+ " or " + 
-							(this.containsKey(initializer1) ? this.get(initializer1) : this.get(getPair(initializer1.toString()))));
+							(this.containsKey(initializer1.toString()) ? this.get(initializer1.toString()) : this.get(getPair(initializer1.toString()))));
 					failure = true;
 				}
 			}
 			else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
 				if (!checkInfixAndVariable((InfixExpression)initializer2, initializer1.toString())) {
 					System.out.println(initializer2 + " should be replaced with " + 
-							(this.containsKey(initializer1) ? initializer1 : getPair(initializer1.toString()))
+							(this.containsKey(initializer1.toString()) ? initializer1 : getPair(initializer1.toString()))
 							+ " or " + 
-							(this.containsKey(initializer1) ? this.get(initializer1) : this.get(getPair(initializer1.toString()))));
+							(this.containsKey(initializer1.toString()) ? this.get(initializer1.toString()) : this.get(getPair(initializer1.toString()))));
 					failure = true;
 				}
 			}
@@ -339,6 +329,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	// Again maybe void
 	public boolean checkInfix(InfixExpression expr1, InfixExpression expr2)
 	{
+		Logger.logInfo("Checking infix...");
 		Expression left1 = expr1.getLeftOperand();
 		Expression left2 = expr2.getLeftOperand();
 		Expression right1 = expr1.getRightOperand();
@@ -346,9 +337,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		
 		String operator1 = expr1.getOperator().toString();
 		String operator2 = expr2.getOperator().toString();
-							
-		String replacement = "";
-		
+
 		boolean failure = false;
 		
 		if (!operator1.equals(operator2)) {
@@ -380,27 +369,27 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			if (left2.getNodeType() == Type.NUMBER_LITERAL) {
 				if (!checkVariableAndNumber(left1.toString(), left2)) {
 					System.out.println(left2 + " should be replaced with " + 
-							(this.containsKey(left1) ? left1 : getPair(left1.toString()))
+							(this.containsKey(left1.toString()) ? left1 : getPair(left1.toString()))
 							+ " or " + 
-							(this.containsKey(left1) ? this.get(left1) : this.get(getPair(left1.toString()))));
+							(this.containsKey(left1.toString()) ? this.get(left1.toString()) : this.get(getPair(left1.toString()))));
 					failure = true;
 				}
 			}
 			else if (left2.getNodeType() == Type.SIMPLE_NAME) {
-				if (!checkVariables(left1.toString(), left2.toString())) {
+				if (!checkVariableNames(left1.toString(), left2.toString())) {
 					System.out.println(left2 + " should be replaced with " +
-							(this.containsKey(left1) ? left1 : getPair(left1.toString()))
+							(this.containsKey(left1.toString()) ? left1 : getPair(left1.toString()))
 							+ " or " + 
-							(this.containsKey(left1) ? this.get(left1) : this.get(getPair(left1.toString()))));
+							(this.containsKey(left1.toString()) ? this.get(left1.toString()) : this.get(getPair(left1.toString()))));
 					failure = true;
 				}
 			}
 			else if (left2.getNodeType() == Type.INFIX_EXPRESSION) {
 				if (!checkInfixAndVariable((InfixExpression)left2, left1.toString())) {
 					System.out.println(left2 + " should be replaced with " + 
-							(this.containsKey(left1) ? left1 : getPair(left1.toString()))
+							(this.containsKey(left1.toString()) ? left1 : getPair(left1.toString()))
 							+ " or " + 
-							(this.containsKey(left1) ? this.get(left1) : this.get(getPair(left1.toString()))));
+							(this.containsKey(left1.toString()) ? this.get(left1.toString()) : this.get(getPair(left1.toString()))));
 					failure = true;
 				}
 			}
@@ -458,29 +447,30 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		}
 		else if (right1.getNodeType() == Type.SIMPLE_NAME) {
 			if (right2.getNodeType() == Type.NUMBER_LITERAL) {
+				this.printMap();
 				if (!checkVariableAndNumber(right1.toString(), right2)) {
 					System.out.println(right2 + " should be replaced with " +
-							(this.containsKey(right1) ? right1 : getPair(right1.toString()))
+							(this.containsKey(right1.toString()) ? right1 : getPair(right1.toString()))
 							+ " or " + 
-							(this.containsKey(right1) ? this.get(right1) : this.get(getPair(right1.toString()))));
+							(this.containsKey(right1.toString()) ? this.get(right1.toString()) : this.get(getPair(right1.toString()))));
 					failure = true;
 				}
 			}
 			else if (right2.getNodeType() == Type.SIMPLE_NAME) {
-				if (!checkVariables(right1.toString(), right2.toString())) {
+				if (!checkVariableNames(right1.toString(), right2.toString())) {
 					System.out.println(right2 + " should be replaced with " + 
-							(this.containsKey(right1) ? right1 : getPair(right1.toString()))
+							(this.containsKey(right1.toString()) ? right1 : getPair(right1.toString()))
 							+ " or " + 
-							(this.containsKey(right1) ? this.get(right1) : this.get(getPair(right1.toString()))));
+							(this.containsKey(right1.toString()) ? this.get(right1.toString()) : this.get(getPair(right1.toString()))));
 					failure = true;
 				}
 			}
 			else if (right2.getNodeType() == Type.INFIX_EXPRESSION) {
 				if (!checkInfixAndVariable((InfixExpression)right2, right1.toString())) {
 					System.out.println(right2 + " should be replaced with " + 
-							(this.containsKey(right1) ? right1 : getPair(right1.toString()))
+							(this.containsKey(right1.toString()) ? right1 : getPair(right1.toString()))
 							+ " or " + 
-							(this.containsKey(right1) ? this.get(right1) : this.get(getPair(right1.toString()))));
+							(this.containsKey(right1.toString()) ? this.get(right1.toString()) : this.get(getPair(right1.toString()))));
 					failure = true;
 				}
 			}
@@ -519,6 +509,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		return !failure;
 	}
 
+	@SuppressWarnings("unchecked")
 	public boolean checkDeclarationStatements(VariableDeclarationStatement declaration1, VariableDeclarationStatement declaration2)
 	{
 		List<VariableDeclarationFragment> fragments1 = declaration1.fragments();
@@ -554,9 +545,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 	{
 		Expression initializer1 = declaration1.getInitializer();
 		Expression initializer2 = declaration2.getInitializer();
-		
-		String replacement = "";
-		
+				
 		boolean failure = false;
 		
 		// If we have one only initializer
@@ -569,90 +558,98 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			failure = true;
 		}
 		else if (initializer1 != null && initializer2 != null) {
-			if (initializer1.getNodeType() == Type.NUMBER_LITERAL) {
-				if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
-					if (!checkNumbers(initializer1, initializer2)) {
-						System.out.println(initializer2 + " should be replaced with " + initializer1);
-						failure = true;
-					}
-				}
-				else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
-					if (!checkVariableAndNumber(initializer2.toString(), initializer1)) {
-						System.out.println(initializer2 + " should be replaced with " + initializer1);
-						failure = true;
-					}
-				}
-				else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
-					if (!checkInfixAndNumber((InfixExpression)initializer2, initializer1)) {
-						System.out.println(initializer2 + " should be replaced with " + initializer1);
-						failure = true;
-					}
+			return compareExpressions(initializer1, initializer2);
+			
+		}
+		
+		return !failure;
+	}
+	
+	private boolean compareExpressions(Expression e1, Expression e2) {
+		boolean failure = false;
+		if (e1.getNodeType() == Type.NUMBER_LITERAL) {
+			if (e2.getNodeType() == Type.NUMBER_LITERAL) {
+				if (!checkNumbers(e1, e2)) {
+					System.out.println(e2 + " should be replaced with " + e1);
+					failure = true;
 				}
 			}
-			else if (initializer1.getNodeType() == Type.SIMPLE_NAME) {
-				if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
-					if (!checkVariableAndNumber(initializer1.toString(), initializer2)) {
-						System.out.println(initializer2 + " should be replaced with " +
-								(this.containsKey(initializer1) ? initializer1 : getPair(initializer1.toString()))
-								+ " or " + 
-								(this.containsKey(initializer1) ? this.get(initializer1) : this.get(getPair(initializer1.toString()))));
-						failure = true;
-					}
-				}
-				else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
-					if (!checkVariables(initializer1.toString(), initializer2.toString())) {
-						System.out.println(initializer2 + " should be replaced with " + 
-								(this.containsKey(initializer1) ? initializer1 : getPair(initializer1.toString()))
-								+ " or " + 
-								(this.containsKey(initializer1) ? this.get(initializer1) : this.get(getPair(initializer1.toString()))));
-						failure = true;
-					}
-				}
-				else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
-					if (!checkInfixAndVariable((InfixExpression)initializer2, initializer1.toString())) {
-						System.out.println(initializer2 + " should be replaced with " + 
-								(this.containsKey(initializer1) ? initializer1 : getPair(initializer1.toString()))
-								+ " or " + 
-								(this.containsKey(initializer1) ? this.get(initializer1) : this.get(getPair(initializer1.toString()))));
-						failure = true;
-					}
+			else if (e2.getNodeType() == Type.SIMPLE_NAME) {
+				if (!checkVariableAndNumber(e2.toString(), e1)) {
+					System.out.println(e2 + " should be replaced with " + e1);
+					failure = true;
 				}
 			}
-			else if (initializer1.getNodeType() == Type.INFIX_EXPRESSION) {
-				Pair<String, String> infixPair = getInfixPair((InfixExpression)initializer1);
-				InfixExpression expr = (InfixExpression)initializer1;
-				String operator = expr.getOperator().toString();
-				
-				if (initializer2.getNodeType() == Type.NUMBER_LITERAL) {
-					if (!checkInfixAndNumber((InfixExpression)initializer1, initializer2)) {
-						System.out.println(initializer2 + " should be replaced with " + 
-								infixPair.first + " " + operator + " " + infixPair.second + " or " +
-								getInfixExpressionValue((InfixExpression)initializer1));
-						failure = true;
-					}
+			else if (e2.getNodeType() == Type.INFIX_EXPRESSION) {
+				if (!checkInfixAndNumber((InfixExpression)e2, e1)) {
+					System.out.println(e2 + " should be replaced with " + e1);
+					failure = true;
 				}
-				else if (initializer2.getNodeType() == Type.SIMPLE_NAME) {
-					if (!checkInfixAndVariable((InfixExpression)initializer1, initializer2.toString())) {
-						System.out.println(initializer2 + " should be replaced with " + 
-								infixPair.first + " " + operator + " " + infixPair.second + " or " +
-								getInfixExpressionValue((InfixExpression)initializer1));
-						failure = true;
-					}
+			}
+		}
+		else if (e1.getNodeType() == Type.SIMPLE_NAME) {
+			if (e2.getNodeType() == Type.NUMBER_LITERAL) {
+				if (!checkVariableAndNumber(e1.toString(), e2)) {
+					System.out.println(e2 + " should be replaced with " +
+							(this.containsKey(e1.toString()) ? e1 : getPair(e1.toString()))
+							+ " or " + 
+							(this.containsKey(e1.toString()) ? this.get(e1.toString()) : this.get(getPair(e1.toString()))));
+					failure = true;
 				}
-				else if (initializer2.getNodeType() == Type.INFIX_EXPRESSION) {
-					if (!checkInfix((InfixExpression)initializer1, (InfixExpression)initializer2)) {
-						System.out.println(initializer2 + " should be replaced with " + 
-								infixPair.first + " " + operator + " " + infixPair.second + " or " +
-								getInfixExpressionValue((InfixExpression)initializer1));
-						failure = true;
-					}
+			}
+			else if (e2.getNodeType() == Type.SIMPLE_NAME) {
+				if (!checkVariableNames(e1.toString(), e2.toString())) {
+					System.out.println(e2 + " should be replaced with " + 
+							(this.containsKey(e1.toString()) ? e1 : getPair(e1.toString()))
+							+ " or " + 
+							(this.containsKey(e1.toString()) ? this.get(e1.toString()) : this.get(getPair(e1.toString()))));
+					failure = true;
+				}
+			}
+			else if (e2.getNodeType() == Type.INFIX_EXPRESSION) {
+				if (!checkInfixAndVariable((InfixExpression)e2, e1.toString())) {
+					System.out.println(e2 + " should be replaced with " + 
+							(this.containsKey(e1.toString()) ? e1 : getPair(e1.toString()))
+							+ " or " + 
+							(this.containsKey(e1.toString()) ? this.get(e1.toString()) : this.get(getPair(e1.toString()))));
+					failure = true;
+				}
+			}
+		}
+		else if (e1.getNodeType() == Type.INFIX_EXPRESSION) {
+			Pair<String, String> infixPair = getInfixPair((InfixExpression)e1);
+			InfixExpression expr = (InfixExpression)e1;
+			String operator = expr.getOperator().toString();
+			
+			if (e2.getNodeType() == Type.NUMBER_LITERAL) {
+				if (!checkInfixAndNumber((InfixExpression)e1, e2)) {
+					System.out.println(e2 + " should be replaced with " + 
+							infixPair.first + " " + operator + " " + infixPair.second + " or " +
+							getInfixExpressionValue((InfixExpression)e1));
+					failure = true;
+				}
+			}
+			else if (e2.getNodeType() == Type.SIMPLE_NAME) {
+				if (!checkInfixAndVariable((InfixExpression)e1, e2.toString())) {
+					System.out.println(e2 + " should be replaced with " + 
+							infixPair.first + " " + operator + " " + infixPair.second + " or " +
+							getInfixExpressionValue((InfixExpression)e1));
+					failure = true;
+				}
+			}
+			else if (e2.getNodeType() == Type.INFIX_EXPRESSION) {
+				if (!checkInfix((InfixExpression)e1, (InfixExpression)e2)) {
+					System.out.println(e2 + " should be replaced with " + 
+							infixPair.first + " " + operator + " " + infixPair.second + " or " +
+							getInfixExpressionValue((InfixExpression)e1));
+					failure = true;
 				}
 			}
 		}
 		
 		return !failure;
 	}
-	
+
 	// In functions before, we knew what statement was from what (correct or wrong) code, 
 	// Here we don't, so we have and indicator that says if assignment or expression is from correct code
 	// Possible values for indicator are assignment and expression
@@ -666,8 +663,6 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		
 		String prefixPostfixOperator = "";
 		String variable2 = "";
-		
-		String replacement = "";
 
 		int initializer = 0;
 		
@@ -676,7 +671,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 		if (rightSide.getNodeType() == Type.NUMBER_LITERAL)
 			initializer = Integer.parseInt(rightSide.toString());
 		else if (rightSide.getNodeType() == Type.SIMPLE_NAME) 
-			initializer = this.containsKey(rightSide) ? this.get(rightSide) : this.get(getPair(rightSide.toString()));
+			initializer = this.containsKey(rightSide.toString()) ? this.get(rightSide.toString()) : this.get(getPair(rightSide.toString()));
 
 		if (expression instanceof PrefixExpression) {
 			prefixPostfixOperator = ((PrefixExpression)expression).getOperator().toString();
@@ -712,7 +707,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 				}
 			}
 			
-			if (!checkVariables(variable1, variable2)) {
+			if (!checkVariableNames(variable1, variable2)) {
 				System.out.println(variable2 + " should be replaced with " + 
 						(this.containsKey(variable1) ? variable1 : getPair(variable1.toString()))
 						+ " or " + 
@@ -738,7 +733,7 @@ public class BlockVariableMap extends HashMap<String, Integer>
 				}
 			}
 			
-			if (!checkVariables(variable1, variable2)) {
+			if (!checkVariableNames(variable1, variable2)) {
 				System.out.println(variable1 + " should be replaced with " +
 						(this.containsKey(variable2) ? variable2 : getPair(variable2.toString()))
 						+ " or " + 
@@ -749,9 +744,26 @@ public class BlockVariableMap extends HashMap<String, Integer>
 			
 		return !failure;
 	}
+
+	public boolean checkReturnStatements(ReturnStatement src, ReturnStatement dest)
+	{
+		Expression e1 = src.getExpression();
+		Expression e2 = dest.getExpression();
+		
+		return compareExpressions(e1, e2);
+	}
 	
-//	public boolean checkIfStatements(IfStatement srcIf, IfStatement destIf)
-//	{
-//		Statement 
-//	}
+	public void printMap()
+	{
+		if (this.isEmpty())
+	        System.out.println("\tMap is empty.");
+			
+		Iterator<Entry<String, Integer>> it = this.entrySet().iterator();
+	    while (it.hasNext()) {
+	    	Map.Entry<String, Integer> pair = (Map.Entry<String, Integer>)it.next();
+	        System.out.println("\tPair: " + pair.getKey() + " " + pair.getValue());
+	    }
+
+	}
+
 }
